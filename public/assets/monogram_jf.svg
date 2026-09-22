@@ -1,0 +1,170 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <!-- Royal Gold Gradient -->
+    <linearGradient id="goldMetallic" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#937022"/>
+      <stop offset="25%" stop-color="#dfba73"/>
+      <stop offset="50%" stop-color="#fff2c8"/>
+      <stop offset="75%" stop-color="#c5a059"/>
+      <stop offset="100%" stop-color="#694e13"/>
+    </linearGradient>
+
+    <!-- Subtle Gold Glow -->
+    <linearGradient id="goldRadial" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stop-color="#dfba73"/>
+      <stop offset="100%" stop-color="#846219"/>
+    </linearGradient>
+
+    <filter id="softGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="1" stdDeviation="1" flood-color="#4a370e" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Outer Fine Ring -->
+  <circle cx="100" cy="100" r="94" fill="none" stroke="url(#goldMetallic)" stroke-width="1.2" opacity="0.6"/>
+
+  <!-- Beaded Pearl Circle -->
+  <circle cx="100" cy="100" r="88" fill="none" stroke="url(#goldMetallic)" stroke-width="1.5" stroke-dasharray="2.5 4.5" opacity="0.85"/>
+
+  <!-- Inner Solid Crest Ring -->
+  <circle cx="100" cy="100" r="81" fill="none" stroke="url(#goldMetallic)" stroke-width="2"/>
+
+  <!-- Botanical Laurel Foliage Left -->
+  <g fill="url(#goldMetallic)" opacity="0.85" filter="url(#softGlow)">
+    <path d="M 46,104 C 42,94 45,86 48,78 C 45,84 41,92 46,104 Z"/>
+    <path d="M 40,88 C 33,83 31,74 34,67 C 32,74 36,81 40,88 Z"/>
+    <path d="M 49,74 C 43,67 43,59 47,51 C 44,58 46,67 49,74 Z"/>
+    <path d="M 62,60 C 56,53 58,45 64,38 C 59,45 59,54 62,60 Z"/>
+    <path d="M 77,50 C 72,43 76,35 83,30 C 77,36 75,44 77,50 Z"/>
+    <path d="M 42,118 C 38,127 41,136 45,143 C 41,136 38,127 42,118 Z"/>
+    <path d="M 48,132 C 43,140 47,149 53,156 C 47,149 45,140 48,132 Z"/>
+    <path d="M 61,146 C 57,154 63,163 71,168 C 63,163 59,154 61,146 Z"/>
+    <path d="M 77,154 C 74,163 82,170 91,173 C 83,169 77,162 77,154 Z"/>
+  </g>
+
+  <!-- Botanical Laurel Foliage Right -->
+  <g fill="url(#goldMetallic)" opacity="0.85" filter="url(#softGlow)">
+    <path d="M 154,104 C 158,94 155,86 152,78 C 155,84 159,92 154,104 Z"/>
+    <path d="M 160,88 C 167,83 169,74 166,67 C 168,74 164,81 160,88 Z"/>
+    <path d="M 151,74 C 157,67 157,59 153,51 C 156,58 154,67 151,74 Z"/>
+    <path d="M 138,60 C 144,53 142,45 136,38 C 141,45 141,54 138,60 Z"/>
+    <path d="M 123,50 C 128,43 124,35 117,30 C 123,36 125,44 123,50 Z"/>
+    <path d="M 158,118 C 162,127 159,136 155,143 C 159,136 162,127 158,118 Z"/>
+    <path d="M 152,132 C 157,140 153,149 147,156 C 153,149 155,140 152,132 Z"/>
+    <path d="M 139,146 C 143,154 137,163 129,168 C 137,163 141,154 139,146 Z"/>
+    <path d="M 123,154 C 126,163 118,170 109,173 C 117,169 123,162 123,154 Z"/>
+  </g>
+
+  <!-- Imperial Crest Crown Atop -->
+  <g transform="translate(100, 36)" filter="url(#softGlow)">
+    <path d="M -18,4 L -22,-6 L -11,-1 L 0,-12 L 11,-1 L 22,-6 L 18,4 Z" fill="url(#goldMetallic)"/>
+    <circle cx="-22" cy="-8" r="2.2" fill="url(#goldRadial)"/>
+    <circle cx="-11" cy="-3" r="1.8" fill="url(#goldRadial)"/>
+    <circle cx="0" cy="-14" r="2.8" fill="url(#goldRadial)"/>
+    <circle cx="11" cy="-3" r="1.8" fill="url(#goldRadial)"/>
+    <circle cx="22" cy="-8" r="2.2" fill="url(#goldRadial)"/>
+    <!-- Small Cross at pinnacle -->
+    <path d="M -1.2,-20 H 1.2 V -14 H -1.2 Z M -4,-18 H 4 V -16.5 H -4 Z" fill="url(#goldRadial)"/>
+    <!-- Crown Base Filigree -->
+    <rect x="-18" y="4" width="36" height="2.5" rx="1" fill="url(#goldMetallic)"/>
+  </g>
+
+  <!-- Central Ligature Initials: J & F -->
+  <g filter="url(#softGlow)">
+    <!-- Letter J (Calligraphic Serif) -->
+    <path d="
+      M 78,64
+      C 82,64 88,64.5 91,66
+      L 89,73
+      C 86,72 82,71.5 78,71.5
+      L 78,110
+      C 78,124 72,135 59,135
+      C 50,135 44,128 44,120
+      C 44,113 49,108 55,108
+      C 60,108 64,112 64,118
+      C 64,123 60,126 55,126
+      C 62,126 66,120 66,110
+      L 66,71.5
+      C 62,71.5 58,72 55,73
+      L 53,66
+      C 60,64.5 68,64 78,64
+      Z"
+      fill="url(#goldMetallic)"/>
+
+    <!-- Ampersand & (Delicate Flourish Center) -->
+    <path d="
+      M 97,103
+      C 95,99 97,94 100,92
+      C 103,90 106,92 107,95
+      C 107,98 104,101 101,104
+      L 109,112
+      C 112,110 114,107 114,104
+      L 117,105
+      C 116,110 113,114 108,117
+      L 115,124
+      L 112,126
+      L 105,119
+      C 102,122 97,125 91,125
+      C 84,125 80,120 80,114
+      C 80,107 86,102 94,100
+      L 97,99
+      C 94,96 92,93 92,89
+      C 92,83 97,79 103,79
+      C 109,79 114,83 114,89
+      C 114,94 110,98 106,101
+      Z
+      M 95,104
+      C 89,106 84,109 84,115
+      C 84,119 87,122 92,122
+      C 97,122 101,118 104,115
+      Z
+      M 101,82
+      C 97,82 95,85 95,88
+      C 95,92 98,95 102,98
+      C 105,95 107,92 107,88
+      C 107,84 104,82 101,82
+      Z"
+      fill="url(#goldMetallic)"
+      opacity="0.95"/>
+
+    <!-- Letter F (Calligraphic Serif) -->
+    <path d="
+      M 112,65
+      L 152,65
+      L 153,74
+      C 149,72 144,71.5 137,71.5
+      L 128,71.5
+      L 128,92
+      L 142,92
+      C 145,92 147,90 148,87
+      L 150,87
+      L 150,102
+      L 148,102
+      C 147,99 145,97 142,97
+      L 128,97
+      L 128,124
+      C 128,129 131,131 137,131
+      L 137,135
+      L 110,135
+      L 110,131
+      C 116,131 119,129 119,124
+      L 119,71.5
+      L 112,71.5
+      Z"
+      fill="url(#goldMetallic)"/>
+  </g>
+
+  <!-- Bottom Ribbon / Date Banner -->
+  <g transform="translate(100, 154)" filter="url(#softGlow)">
+    <!-- Small star or diamond accents -->
+    <path d="M -30,-4 L -28,-7 L -26,-4 L -23,-2 L -26,0 L -28,3 L -30,0 L -33,-2 Z" fill="url(#goldMetallic)"/>
+    <text x="0" y="0" font-family="'Cinzel', 'Playfair Display', 'Times New Roman', serif" font-size="10.5" font-weight="600" letter-spacing="4" fill="url(#goldMetallic)" text-anchor="middle">
+      2026
+    </text>
+    <path d="M 30,-4 L 32,-7 L 34,-4 L 37,-2 L 34,0 L 32,3 L 30,0 L 27,-2 Z" fill="url(#goldMetallic)"/>
+    <!-- Subtle Subtitle Arc: KINSHASA -->
+    <text x="0" y="14" font-family="'Montserrat', sans-serif" font-size="6.5" font-weight="500" letter-spacing="3" fill="url(#goldMetallic)" opacity="0.8" text-anchor="middle">
+      KINSHASA
+    </text>
+  </g>
+</svg>
