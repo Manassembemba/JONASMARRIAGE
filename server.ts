@@ -39,9 +39,15 @@ async function startServer() {
   if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
-  app.use('/uploads', express.static(UPLOADS_DIR));
 
   const PUBLIC_DIR = path.resolve(process.cwd(), 'public');
+  const PUBLIC_UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
+  if (!fs.existsSync(PUBLIC_UPLOADS_DIR)) {
+    fs.mkdirSync(PUBLIC_UPLOADS_DIR, { recursive: true });
+  }
+
+  app.use('/uploads', express.static(UPLOADS_DIR));
+  app.use('/uploads', express.static(PUBLIC_UPLOADS_DIR));
   app.use('/assets', express.static(path.join(PUBLIC_DIR, 'assets')));
   app.use(express.static(PUBLIC_DIR));
 
@@ -81,8 +87,15 @@ async function startServer() {
       const cleanName = filename ? filename.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20) : 'photo';
       const fileBaseName = `${cleanName}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
       const filePath = path.join(UPLOADS_DIR, fileBaseName);
+      const publicFilePath = path.join(PUBLIC_UPLOADS_DIR, fileBaseName);
 
+      // Persist to both data/uploads and public/uploads for total durability
       fs.writeFileSync(filePath, buffer);
+      try {
+        fs.writeFileSync(publicFilePath, buffer);
+      } catch (e) {
+        console.warn('Could not write to public/uploads, primary storage data/uploads succeeded:', e);
+      }
 
       const publicUrl = `/uploads/${fileBaseName}`;
       console.log(`[Upload] Image persisted to disk: ${publicUrl} (${(buffer.length / 1024).toFixed(1)} KB)`);
@@ -116,12 +129,34 @@ async function startServer() {
   // Update Wedding Details (Dates, Names, Quotes, Announcement...)
   app.put('/api/settings/details', (req, res) => {
     try {
-      const details = req.body;
-      if (!details || typeof details !== 'object') {
+      const incoming = req.body;
+      if (!incoming || typeof incoming !== 'object') {
         return res.status(400).json({ success: false, error: 'Invalid details object' });
       }
-      saveWeddingSetting('details', details);
-      res.json({ success: true, data: details });
+
+      // Deep merge incoming details with currently saved database values
+      const current = getWeddingSettings().details;
+      const mergedDetails = {
+        ...current,
+        ...incoming,
+        groom: {
+          ...current.groom,
+          ...(incoming.groom || {}),
+        },
+        bride: {
+          ...current.bride,
+          ...(incoming.bride || {}),
+        },
+      };
+
+      saveWeddingSetting('details', mergedDetails);
+      console.log('[Settings] Wedding details deep-merged and saved to SQLite:', {
+        coupleHeroPhoto: mergedDetails.coupleHeroPhoto,
+        groomPhoto: mergedDetails.groom?.photo,
+        bridePhoto: mergedDetails.bride?.photo,
+        monogramUrl: mergedDetails.monogramUrl,
+      });
+      res.json({ success: true, data: mergedDetails });
     } catch (err: any) {
       console.error('Error updating details:', err);
       res.status(500).json({ success: false, error: err.message });

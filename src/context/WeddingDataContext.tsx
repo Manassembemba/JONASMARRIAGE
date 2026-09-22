@@ -60,11 +60,32 @@ interface WeddingDataContextType {
 const WeddingDataContext = createContext<WeddingDataContextType | null>(null);
 
 export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [details, setDetails] = useState<WeddingDetails>(DEFAULT_WEDDING_DETAILS);
+  const [details, setDetails] = useState<WeddingDetails>(() => {
+    try {
+      const cached = localStorage.getItem('wedding_details_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        return {
+          ...DEFAULT_WEDDING_DETAILS,
+          ...parsed,
+          groom: { ...DEFAULT_WEDDING_DETAILS.groom, ...(parsed.groom || {}) },
+          bride: { ...DEFAULT_WEDDING_DETAILS.bride, ...(parsed.bride || {}) },
+        };
+      }
+    } catch {}
+    return DEFAULT_WEDDING_DETAILS;
+  });
+
   const [programSteps, setProgramSteps] = useState<ProgramEvent[]>(INITIAL_PROGRAM_STEPS);
   const [venues, setVenues] = useState<VenueData[]>(INITIAL_VENUES_DATA);
   const [storyMilestones, setStoryMilestones] = useState<TimelineMilestone[]>(INITIAL_STORY_MILESTONES);
-  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(DEFAULT_GALLERY_ITEMS);
+  const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(() => {
+    try {
+      const cached = localStorage.getItem('wedding_gallery_cache');
+      if (cached) return JSON.parse(cached);
+    } catch {}
+    return DEFAULT_GALLERY_ITEMS;
+  });
   const [rsvps, setRsvps] = useState<RSVPData[]>(INITIAL_RSVPS);
   const [guestbook, setGuestbook] = useState<GuestbookMessage[]>(INITIAL_GUESTBOOK);
   const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
@@ -201,11 +222,29 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       if (res.ok) {
         const json = await res.json();
         if (json.success && json.data) {
-          if (json.data.details) setDetails(json.data.details);
+          if (json.data.details) {
+            setDetails((prev) => {
+              const merged = {
+                ...prev,
+                ...json.data.details,
+                groom: { ...prev.groom, ...(json.data.details.groom || {}) },
+                bride: { ...prev.bride, ...(json.data.details.bride || {}) },
+              };
+              try {
+                localStorage.setItem('wedding_details_cache', JSON.stringify(merged));
+              } catch {}
+              return merged;
+            });
+          }
           if (json.data.programSteps) setProgramSteps(json.data.programSteps);
           if (json.data.venues) setVenues(json.data.venues);
           if (json.data.storyMilestones) setStoryMilestones(json.data.storyMilestones);
-          if (json.data.galleryItems) setGalleryItems(json.data.galleryItems);
+          if (json.data.galleryItems) {
+            setGalleryItems(json.data.galleryItems);
+            try {
+              localStorage.setItem('wedding_gallery_cache', JSON.stringify(json.data.galleryItems));
+            } catch {}
+          }
           if (json.data.rsvps) setRsvps(json.data.rsvps);
           if (json.data.guestbook) setGuestbook(json.data.guestbook);
         }
@@ -222,18 +261,52 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     refreshData();
   }, [refreshData]);
 
-  // Update Wedding Details (Dates, Names, Quotes, Announcement)
+  // Update Wedding Details (Dates, Names, Quotes, Announcement, Photos)
   const updateDetails = async (newDetails: Partial<WeddingDetails>): Promise<boolean> => {
     setIsSaving(true);
-    const updated = { ...details, ...newDetails };
-    setDetails(updated);
+    let payloadToSave: WeddingDetails = details;
+    setDetails((prev) => {
+      const merged: WeddingDetails = {
+        ...prev,
+        ...newDetails,
+        groom: {
+          ...prev.groom,
+          ...(newDetails.groom || {}),
+        },
+        bride: {
+          ...prev.bride,
+          ...(newDetails.bride || {}),
+        },
+      };
+      payloadToSave = merged;
+      try {
+        localStorage.setItem('wedding_details_cache', JSON.stringify(merged));
+      } catch {}
+      return merged;
+    });
+
     try {
       const res = await fetch('/api/settings/details', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
+        body: JSON.stringify(newDetails),
       });
       if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setDetails((prev) => {
+            const finalMerged = {
+              ...prev,
+              ...json.data,
+              groom: { ...prev.groom, ...(json.data.groom || {}) },
+              bride: { ...prev.bride, ...(json.data.bride || {}) },
+            };
+            try {
+              localStorage.setItem('wedding_details_cache', JSON.stringify(finalMerged));
+            } catch {}
+            return finalMerged;
+          });
+        }
         setLastSaved(new Date());
         await fetchDbStatus();
         return true;
@@ -320,12 +393,22 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     setIsSaving(true);
     setGalleryItems(items);
     try {
+      localStorage.setItem('wedding_gallery_cache', JSON.stringify(items));
+    } catch {}
+    try {
       const res = await fetch('/api/settings/gallery', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(items),
       });
       if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.data) {
+          setGalleryItems(json.data);
+          try {
+            localStorage.setItem('wedding_gallery_cache', JSON.stringify(json.data));
+          } catch {}
+        }
         setLastSaved(new Date());
         await fetchDbStatus();
         return true;

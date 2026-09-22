@@ -244,25 +244,34 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       cityCountry: details.cityCountry || 'KINSHASA, RDC',
     });
     setVenuesForm(venues);
-    setPresentationForm({
-      heroBadge: details.heroBadge || 'Célébration Nuptiale Privée',
-      announcementText: details.announcementText || 'Nous avons le bonheur de vous annoncer notre mariage',
-      heroTagline: details.heroTagline || "Deux âmes réunies pour l'éternité",
-      centerQuote: details.centerQuote || 'Deux cœurs, une promesse, une nouvelle histoire à écrire ensemble.',
-      centerSubtitle: details.centerSubtitle || 'Pour le Meilleur et pour Toujours',
-      storyIntroTitle: details.storyIntroTitle || 'Notre Histoire',
-      storyIntroText: details.storyIntroText || "D'une rencontre fortuite à l'évidence d'une vie entière à bâtir ensemble.",
-      programSubtitle: details.programSubtitle || "Découvrez le déroulement chronologique de cette journée mémorable consacrée à l'amour, à la loi et aux traditions ancestrales.",
-      emotionalQuote1: details.emotionalQuote1 || '« Une nouvelle aventure commence...',
-      emotionalQuote2: details.emotionalQuote2 || 'Et nous aimerions la partager avec vous. »',
-      footerMessage: details.footerMessage || "Merci de partager avec nous ce moment unique, prélude d'une éternelle célébration de notre amour.",
-      coupleHeroPhoto: details.coupleHeroPhoto || '/assets/couple_photo.jpg',
-    });
+    setPresentationForm((prev) => ({
+      ...prev,
+      heroBadge: details.heroBadge || prev.heroBadge,
+      announcementText: details.announcementText || prev.announcementText,
+      heroTagline: details.heroTagline || prev.heroTagline,
+      centerQuote: details.centerQuote || prev.centerQuote,
+      centerSubtitle: details.centerSubtitle || prev.centerSubtitle,
+      storyIntroTitle: details.storyIntroTitle || prev.storyIntroTitle,
+      storyIntroText: details.storyIntroText || prev.storyIntroText,
+      programSubtitle: details.programSubtitle || prev.programSubtitle,
+      emotionalQuote1: details.emotionalQuote1 || prev.emotionalQuote1,
+      emotionalQuote2: details.emotionalQuote2 || prev.emotionalQuote2,
+      footerMessage: details.footerMessage || prev.footerMessage,
+      coupleHeroPhoto: details.coupleHeroPhoto || prev.coupleHeroPhoto,
+    }));
     setStoryForm(storyMilestones);
-    setCoupleForm({
-      groom: { ...details.groom },
-      bride: { ...details.bride },
-    });
+    setCoupleForm((prev) => ({
+      groom: {
+        ...prev.groom,
+        ...details.groom,
+        photo: details.groom?.photo || prev.groom.photo,
+      },
+      bride: {
+        ...prev.bride,
+        ...details.bride,
+        photo: details.bride?.photo || prev.bride.photo,
+      },
+    }));
     setProgramForm(programSteps);
   }, [details, venues, programSteps, storyMilestones]);
 
@@ -1627,8 +1636,10 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            handleFileUpload(file, (url) => {
-                              setPresentationForm({ ...presentationForm, coupleHeroPhoto: url });
+                            handleFileUpload(file, async (url) => {
+                              setPresentationForm((prev) => ({ ...prev, coupleHeroPhoto: url }));
+                              await updateDetails({ coupleHeroPhoto: url });
+                              showNotification("Photo de couverture enregistrée et persistée avec succès !");
                             });
                           }
                         }}
@@ -1968,11 +1979,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              handleFileUpload(file, (url) => {
-                                setCoupleForm({
-                                  ...coupleForm,
-                                  groom: { ...coupleForm.groom, photo: url },
+                              handleFileUpload(file, async (url) => {
+                                setCoupleForm((prev) => ({
+                                  ...prev,
+                                  groom: { ...prev.groom, photo: url },
+                                }));
+                                await updateDetails({
+                                  groom: { ...details.groom, ...coupleForm.groom, photo: url },
                                 });
+                                showNotification("Photo du marié enregistrée et persistée avec succès !");
                               });
                             }
                           }}
@@ -2082,11 +2097,15 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) {
-                              handleFileUpload(file, (url) => {
-                                setCoupleForm({
-                                  ...coupleForm,
-                                  bride: { ...coupleForm.bride, photo: url },
+                              handleFileUpload(file, async (url) => {
+                                setCoupleForm((prev) => ({
+                                  ...prev,
+                                  bride: { ...prev.bride, photo: url },
+                                }));
+                                await updateDetails({
+                                  bride: { ...details.bride, ...coupleForm.bride, photo: url },
                                 });
+                                showNotification("Photo de la mariée enregistrée et persistée avec succès !");
                               });
                             }
                           }}

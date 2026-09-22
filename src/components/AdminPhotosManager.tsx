@@ -128,6 +128,27 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
     }
   };
 
+  // Immediate save for manually edited URLs
+  const handleSaveOfficialUrl = async (type: 'hero' | 'groom' | 'bride' | 'monogram') => {
+    setIsSaving(true);
+    let payload: Partial<WeddingDetails> = {};
+    if (type === 'hero') payload = { coupleHeroPhoto };
+    else if (type === 'groom') payload = { groom: { ...details.groom, photo: groomPhoto } };
+    else if (type === 'bride') payload = { bride: { ...details.bride, photo: bridePhoto } };
+    else if (type === 'monogram') payload = { monogramUrl };
+
+    try {
+      const ok = await onUpdateDetails(payload);
+      if (ok) {
+        showNotification("Photo validée et enregistrée avec succès dans la base de données !");
+      } else {
+        showNotification("Erreur lors de l'enregistrement.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Replace photo in public gallery
   const handleReplaceGalleryPhoto = async (index: number, file: File) => {
     if (!file) return;
@@ -374,9 +395,24 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                   type="text"
                   value={coupleHeroPhoto}
                   onChange={(e) => setCoupleHeroPhoto(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSaveOfficialUrl('hero');
+                    }
+                  }}
                   placeholder="/assets/couple_photo.jpg"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
+                <button
+                  type="button"
+                  onClick={() => handleSaveOfficialUrl('hero')}
+                  title="Enregistrer cette photo dans la base SQLite"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
+                >
+                  <Check className="w-3 h-3" />
+                  <span className="hidden sm:inline">Valider</span>
+                </button>
                 <label className="px-2.5 py-1.5 rounded-lg bg-[#775a19]/10 hover:bg-[#775a19]/20 text-[#775a19] text-xs font-medium cursor-pointer border border-[#c5a059]/30 shrink-0 flex items-center gap-1">
                   <Upload className="w-3 h-3" />
                   <span className="hidden sm:inline">Téléverser</span>
@@ -450,9 +486,24 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                   type="text"
                   value={groomPhoto}
                   onChange={(e) => setGroomPhoto(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSaveOfficialUrl('groom');
+                    }
+                  }}
                   placeholder="/assets/groom_jonas.jpg"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
+                <button
+                  type="button"
+                  onClick={() => handleSaveOfficialUrl('groom')}
+                  title="Enregistrer cette photo dans la base SQLite"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
+                >
+                  <Check className="w-3 h-3" />
+                  <span className="hidden sm:inline">Valider</span>
+                </button>
                 <label className="px-2.5 py-1.5 rounded-lg bg-[#775a19]/10 hover:bg-[#775a19]/20 text-[#775a19] text-xs font-medium cursor-pointer border border-[#c5a059]/30 shrink-0 flex items-center gap-1">
                   <Upload className="w-3 h-3" />
                   <span className="hidden sm:inline">Téléverser</span>
@@ -526,9 +577,24 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                   type="text"
                   value={bridePhoto}
                   onChange={(e) => setBridePhoto(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSaveOfficialUrl('bride');
+                    }
+                  }}
                   placeholder="/assets/bride_flora.jpg"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
+                <button
+                  type="button"
+                  onClick={() => handleSaveOfficialUrl('bride')}
+                  title="Enregistrer cette photo dans la base SQLite"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
+                >
+                  <Check className="w-3 h-3" />
+                  <span className="hidden sm:inline">Valider</span>
+                </button>
                 <label className="px-2.5 py-1.5 rounded-lg bg-[#775a19]/10 hover:bg-[#775a19]/20 text-[#775a19] text-xs font-medium cursor-pointer border border-[#c5a059]/30 shrink-0 flex items-center gap-1">
                   <Upload className="w-3 h-3" />
                   <span className="hidden sm:inline">Téléverser</span>
@@ -603,9 +669,24 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                   type="text"
                   value={monogramUrl}
                   onChange={(e) => setMonogramUrl(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSaveOfficialUrl('monogram');
+                    }
+                  }}
                   placeholder="/assets/monogram_jf.svg"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
+                <button
+                  type="button"
+                  onClick={() => handleSaveOfficialUrl('monogram')}
+                  title="Enregistrer ce logo dans la base SQLite"
+                  className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
+                >
+                  <Check className="w-3 h-3" />
+                  <span className="hidden sm:inline">Valider</span>
+                </button>
                 <label className="px-2.5 py-1.5 rounded-lg bg-[#775a19]/10 hover:bg-[#775a19]/20 text-[#775a19] text-xs font-medium cursor-pointer border border-[#c5a059]/30 shrink-0 flex items-center gap-1">
                   <Upload className="w-3 h-3" />
                   <span className="hidden sm:inline">Téléverser</span>

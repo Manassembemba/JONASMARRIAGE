@@ -360,8 +360,29 @@ export function getWeddingSettings() {
   const storyRow = getSettingStmt.get('story_milestones') as { value: string } | undefined;
   const galleryRow = getSettingStmt.get('gallery_items') as { value: string } | undefined;
 
+  let mergedDetails = DEFAULT_WEDDING_DETAILS;
+  if (detailsRow && detailsRow.value) {
+    try {
+      const parsed = JSON.parse(detailsRow.value);
+      mergedDetails = {
+        ...DEFAULT_WEDDING_DETAILS,
+        ...parsed,
+        groom: {
+          ...DEFAULT_WEDDING_DETAILS.groom,
+          ...(parsed.groom || {}),
+        },
+        bride: {
+          ...DEFAULT_WEDDING_DETAILS.bride,
+          ...(parsed.bride || {}),
+        },
+      };
+    } catch (e) {
+      console.error('Error parsing details from SQLite:', e);
+    }
+  }
+
   return {
-    details: detailsRow ? { ...DEFAULT_WEDDING_DETAILS, ...JSON.parse(detailsRow.value) } : DEFAULT_WEDDING_DETAILS,
+    details: mergedDetails,
     programSteps: programRow ? JSON.parse(programRow.value) : DEFAULT_PROGRAM_STEPS,
     venues: venuesRow ? JSON.parse(venuesRow.value) : DEFAULT_VENUES,
     storyMilestones: storyRow ? JSON.parse(storyRow.value) : DEFAULT_STORY_MILESTONES,
