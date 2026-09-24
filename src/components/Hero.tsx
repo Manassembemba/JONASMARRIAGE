@@ -1,7 +1,7 @@
 import React from 'react';
-import { Heart, Calendar, Share2, Sparkles, MapPin } from 'lucide-react';
+import { Heart, Share2, Sparkles, MapPin } from 'lucide-react';
 import { useWeddingData } from '../context/WeddingDataContext';
-import { downloadWeddingIcs, shareOnWhatsApp } from '../utils/calendar';
+import { shareOnWhatsApp } from '../utils/calendar';
 import { WeddingLogo } from './WeddingLogo';
 
 export const Hero: React.FC = () => {
@@ -79,18 +79,8 @@ export const Hero: React.FC = () => {
           </a>
         </div>
 
-        {/* Calendar & Share Quick Utilities */}
+        {/* Share Quick Utility */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-12 text-xs">
-          <button
-            type="button"
-            onClick={downloadWeddingIcs}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/80 hover:bg-white text-[#775a19] border border-[#c5a059]/30 rounded-full transition-colors shadow-2xs"
-            title="Télécharger l'événement pour Apple Calendar, Google ou Outlook"
-          >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Ajouter au calendrier (.ics)</span>
-          </button>
-
           <button
             type="button"
             onClick={handleShare}
