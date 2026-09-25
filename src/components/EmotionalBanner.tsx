@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWeddingData } from '../context/WeddingDataContext';
-import { Sparkles, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export const EmotionalBanner: React.FC = () => {
   const { details } = useWeddingData();
@@ -12,7 +12,7 @@ export const EmotionalBanner: React.FC = () => {
 
       <div className="max-w-[780px] mx-auto px-4 sm:px-6 relative z-10">
         <div className="w-12 h-12 rounded-full bg-white mx-auto flex items-center justify-center text-[#775a19] shadow-sm mb-6 border border-[#c5a059]/30">
-          <Sparkles className="w-5 h-5 text-[#775a19]" />
+          <Heart className="w-5 h-5 text-[#775a19] fill-[#775a19]/15" />
         </div>
 
         <p className="font-editorial text-2xl sm:text-3xl md:text-4xl text-[#1b1c1a] font-normal leading-[1.35] sm:leading-[1.3] tracking-[0.015em] max-w-xl mx-auto mb-2">

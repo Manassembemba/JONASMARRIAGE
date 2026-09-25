@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWeddingData } from '../context/WeddingDataContext';
-import { Calendar, Clock, MapPin, Navigation, ArrowRight, Building2, Users, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MapPin, Navigation, ArrowRight, Building2, Users, Heart } from 'lucide-react';
 
 export const ProgramSection: React.FC = () => {
   const { programSteps, details, venues } = useWeddingData();
@@ -12,7 +12,7 @@ export const ProgramSection: React.FC = () => {
     if (t.includes('coutumier') || t.includes('famille')) return <Users className="w-5 h-5 text-[#775a19]" />;
     if (index === 0) return <Building2 className="w-5 h-5 text-[#775a19]" />;
     if (index === 1) return <Users className="w-5 h-5 text-[#775a19]" />;
-    return <Sparkles className="w-5 h-5 text-[#775a19]" />;
+    return <Heart className="w-5 h-5 text-[#775a19]" />;
   };
 
   return (

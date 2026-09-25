@@ -10,7 +10,6 @@ import {
   Image as ImageIcon,
   Check,
   RotateCcw,
-  Sparkles,
   Eye,
   Heart,
   Layers,
@@ -328,7 +327,7 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
       <div className="space-y-4">
         <div className="flex items-center justify-between border-b border-[#c5a059]/20 pb-2">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#775a19]" />
+            <Camera className="w-4 h-4 text-[#775a19]" />
             <h4 className="font-editorial text-base text-[#1b1c1a] font-semibold tracking-wide">
               1. Photos Officielles du Mariage (Bannière & Portraits)
             </h4>

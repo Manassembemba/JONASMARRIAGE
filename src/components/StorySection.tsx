@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWeddingData } from '../context/WeddingDataContext';
-import { Sparkles, Heart } from 'lucide-react';
+import { Heart } from 'lucide-react';
 
 export const StorySection: React.FC = () => {
   const { details, storyMilestones } = useWeddingData();
@@ -52,7 +52,7 @@ export const StorySection: React.FC = () => {
                     </span>
                     {isLast && (
                       <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#ffdea5] text-[#4e3700]">
-                        <Sparkles className="w-3 h-3" />
+                        <Heart className="w-3 h-3 fill-[#4e3700]" />
                         Grand Jour
                       </span>
                     )}

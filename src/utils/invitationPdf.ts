@@ -29,46 +29,44 @@ export function generateWhatsAppInvitationMessage(
 ): string {
   const passCode = `PASS-JF2026-${(guest.id || 'INV').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
   const seats = guest.guests_count || 1;
-  const guestNamesNotice = guest.guest_names ? `\n👥 *Accompagnateur(s)* : ${guest.guest_names}` : '';
+  const guestNamesNotice = guest.guest_names ? `\n• Accompagnateur(s) : ${guest.guest_names}` : '';
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mariage-jonas-flora.cd';
 
-  return `👑 *INVITATION OFFICIELLE & PASS D'ACCÈS* 👑
+  return `*INVITATION OFFICIELLE & PASS D'ACCÈS*
 *MARIAGE MADIKANI MBIDI JONAS & MATELO SANGA FLORA*
 Kinshasa, République Démocratique du Congo
 
 Cher(e) *${guest.full_name}*,
 
-C'est avec un immense bonheur et un profond honneur que nous vous convions à la célébration officielle de notre mariage. Votre présence à nos côtés illuminera ces journées mémorables.
+C'est avec un immense honneur et une profonde joie que nous vous prions de bien vouloir assister à la célébration officielle de notre mariage.
 
-📋 *VOTRE BILLET D'ACCÈS PERSONNEL* :
+VOTRE PASS D'ACCÈS PERSONNEL :
 • Invité d'honneur : *${guest.full_name}*
 • Places réservées : *${seats} personne(s)*${guestNamesNotice}
 • Code Pass officiel : *${passCode}*
 
-🗓️ *PROGRAMME OFFICIEL DES CÉLÉBRATIONS* :
+PROGRAMME OFFICIEL DES CÉLÉBRATIONS :
 
-🏛️ *1. MARIAGE CIVIL*
-• *${details.date1 || 'Jeudi 29 Octobre 2026'}*
-• Heure : *11H00* (Accueil protocolaire dès 10h30)
+1. MARIAGE CIVIL
+• Date : *${details.date1 || 'Jeudi 29 Octobre 2026'}*
+• Heure : *11H00* (Accueil dès 10h30)
 • Lieu : *Maison Communale de Lemba*
 • Adresse : Avenue Kadjeke n° 1 Bis, Quartier Commercial, Lemba, Kinshasa
 
-🌺 *2. MARIAGE COUTUMIER & RÉCEPTION*
-• *${details.date2 || 'Samedi 31 Octobre 2026'}*
+2. MARIAGE COUTUMIER & RÉCEPTION
+• Date : *${details.date2 || 'Samedi 31 Octobre 2026'}*
 • Heure : *15H00 à 19H45*
 • Lieu : *Résidence Familiale — N'sele*
 • Adresse : Avenue Bolia n°15, Quartier Mpasa 1, N'sele, Kinshasa
 • Repères : Arrêt 3 Paillote • Référence KIN MARCHE
 
-👗 *Code Vestimentaire* : Tenue de ville élégante ou tenue traditionnelle d'apparat.
+• Code Vestimentaire : Tenue de ville soignée ou tenue traditionnelle d'apparat.
 
-📄 *Votre carte d'invitation officielle au format PDF* a été générée. Vous pouvez également retrouver tous les détails, le plan d'accès et les photos sur notre site :
+Votre carte d'invitation officielle au format PDF est disponible. Retrouvez l'itinéraire, le plan d'accès et le programme complet sur notre site officiel :
 ${appUrl}
 
-Nous avons hâte de célébrer ces moments inoubliables avec vous.
-
-Bien chaleureusement,
-*Jonas & Flora* ❤️`;
+Avec toute notre gratitude et notre considération,
+*Jonas & Flora*`;
 }
 
 /**
@@ -83,7 +81,7 @@ export function generateGmailInvitationData(
   const guestNamesNotice = guest.guest_names ? `\nAccompagnateur(s) : ${guest.guest_names}` : '';
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mariage-jonas-flora.cd';
 
-  const subject = `💍 Invitation Officielle & Pass d'Accès — Mariage Jonas & Flora (Kinshasa 2026)`;
+  const subject = `Invitation Officielle & Pass d'Accès — Mariage Jonas & Flora (Kinshasa)`;
 
   const body = `INVITATION OFFICIELLE & BILLET D'HONNEUR NUPTIAL
 Célébration du Mariage de Madikani Mbidi Jonas & Matelo Sanga Flora

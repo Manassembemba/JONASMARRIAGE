@@ -9,7 +9,7 @@ CALSCALE:GREGORIAN
 METHOD:PUBLISH
 X-WR-CALNAME:Mariage Jonas & Flora
 BEGIN:VEVENT
-SUMMARY:💍 Mariage Civil — Jonas & Flora
+SUMMARY:Mariage Civil — Jonas & Flora
 DESCRIPTION:Célébration du Mariage Civil de Madikani Mbidi Jonas et Matelo Sanga Flora.\\nLieu : Maison Communale de Lemba.\\nAdresse : Avenue Kadjeke n° 1 Bis, Quartier Commercial, Commune de Lemba, Kinshasa.
 DTSTART:20261029T100000Z
 DTEND:20261029T120000Z
@@ -17,7 +17,7 @@ LOCATION:Maison Communale de Lemba, Avenue Kadjeke n° 1 Bis, Quartier Commercia
 STATUS:CONFIRMED
 END:VEVENT
 BEGIN:VEVENT
-SUMMARY:❤️ Mariage Coutumier — Jonas & Flora
+SUMMARY:Mariage Coutumier — Jonas & Flora
 DESCRIPTION:Cérémonie Coutumière et Réjouissances de Jonas & Flora.\\nLieu : Résidence familiale.\\nAdresse : Avenue Bolia n°15, Quartier Mpasa 1, Commune de la N'sele, Kinshasa.\\nRepères : Arrêt 3 Paillote, Réf KIN MARCHE.
 DTSTART:20261031T140000Z
 DTEND:20261031T184500Z
@@ -40,9 +40,9 @@ END:VCALENDAR`;
  * Returns a Google Calendar web url for the main event
  */
 export function getGoogleCalendarUrl(): string {
-  const title = encodeURIComponent('💍 Mariage Madikani Mbidi Jonas ❤️ Matelo Sanga Flora');
+  const title = encodeURIComponent('Mariage Madikani Mbidi Jonas & Matelo Sanga Flora');
   const details = encodeURIComponent(
-    'Célébration nuptiale de Madikani Mbidi Jonas et Matelo Sanga Flora à Kinshasa.\n\n- Jeudi 29 Octobre à 11h00 : Mariage Civil à la Maison Communale de Lemba\n- Samedi 31 Octobre de 15h00 à 19h45 : Mariage Coutumier à la Résidence Familiale (Avenue Bolia n°15, Mpasa 1, N\'sele)'
+    'Célébration nuptiale de Madikani Mbidi Jonas et Matelo Sanga Flora à Kinshasa.\n\n- Mariage Civil : Maison Communale de Lemba\n- Mariage Coutumier : Résidence Familiale (Avenue Bolia n°15, Mpasa 1, N\'sele)'
   );
   const location = encodeURIComponent('Maison Communale de Lemba & Résidence familiale N\'sele, Kinshasa');
   // From Civil to Coutumier
@@ -56,7 +56,7 @@ export function getGoogleCalendarUrl(): string {
 export function shareOnWhatsApp(url?: string): string {
   const targetUrl = url || window.location.href;
   const text = encodeURIComponent(
-    `💍 Vous êtes cordialement invité(e) aux Célébrations Nuptiales de Madikani Mbidi Jonas ❤️ Matelo Sanga Flora à Kinshasa :\n• Mariage Civil : Jeudi 29 Octobre 2026 dès 10h30 (Lemba)\n• Mariage Coutumier : Samedi 31 Octobre 2026 de 15h00 à 19h45 (N'sele, Mpasa 1)\n\nDécouvrez le programme officiel et confirmez votre présence ici : ${targetUrl}`
+    `Vous êtes cordialement invité(e) aux Célébrations Nuptiales de Madikani Mbidi Jonas & Matelo Sanga Flora à Kinshasa.\n\nDécouvrez le programme officiel et confirmez votre présence ici : ${targetUrl}`
   );
   return `https://api.whatsapp.com/send?text=${text}`;
 }

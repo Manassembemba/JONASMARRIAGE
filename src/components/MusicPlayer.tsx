@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Volume2, VolumeX, Music, Disc3, Sparkles } from 'lucide-react';
+import { Volume2, VolumeX, Music, Disc3 } from 'lucide-react';
 
 export const MusicPlayer: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -101,9 +101,8 @@ export const MusicPlayer: React.FC = () => {
           onClick={togglePlay}
           className="fixed bottom-24 right-5 z-40 bg-[#1b1c1a]/95 text-[#ffdea5] px-4 py-2.5 rounded-full shadow-2xl border border-[#c5a059]/50 flex items-center gap-2.5 cursor-pointer hover:bg-[#775a19] transition-all duration-300 animate-bounce text-xs font-medium backdrop-blur-md"
         >
-          <Sparkles className="w-3.5 h-3.5 text-[#c5a059] animate-spin" />
-          <span>Cliquez pour écouter la musique de mariage</span>
-          <Music className="w-4 h-4 ml-1 text-[#ffdea5]" />
+          <Music className="w-3.5 h-3.5 text-[#c5a059]" />
+          <span>Musique du mariage</span>
         </div>
       )}
 

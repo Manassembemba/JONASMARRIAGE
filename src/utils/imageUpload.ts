@@ -1,10 +1,11 @@
+import { supabase } from '../lib/supabase';
+
 /**
  * Image upload & compression utility
- * Compresses heavy photos before uploading to /api/upload to guarantee fast,
- * persistent storage on disk and light SQLite database payloads.
+ * Compresses heavy photos and uploads directly to Supabase Storage
  */
 
-export async function compressImage(file: File, maxDimension = 1920, quality = 0.85): Promise<string> {
+export async function compressImage(file: File, maxDimension = 1920, quality = 0.85): Promise<Blob> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -33,19 +34,23 @@ export async function compressImage(file: File, maxDimension = 1920, quality = 0
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
-          resolve(event.target?.result as string);
+          reject(new Error('Failed to get canvas context'));
           return;
         }
 
-        // Use high-quality smoothing
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         ctx.drawImage(img, 0, 0, width, height);
 
-        // Export as JPEG with 85% quality
         const mimeType = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        const compressedDataUrl = canvas.toDataURL(mimeType, quality);
-        resolve(compressedDataUrl);
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+            else reject(new Error('Canvas toBlob failed'));
+          },
+          mimeType,
+          quality
+        );
       };
       img.onerror = (err) => reject(err);
     };
@@ -55,46 +60,74 @@ export async function compressImage(file: File, maxDimension = 1920, quality = 0
 
 export async function uploadPhotoToServer(fileOrDataUrl: File | string, filenameHint = 'photo'): Promise<string> {
   try {
-    let dataUrl: string;
+    let fileToUpload: File | Blob;
+    let mimeType = 'image/jpeg';
+    let ext = 'jpg';
 
     if (typeof fileOrDataUrl === 'string') {
-      // If it's already an existing persistent upload or remote URL, return directly
       if (
         fileOrDataUrl.startsWith('http://') ||
         fileOrDataUrl.startsWith('https://') ||
         fileOrDataUrl.startsWith('/uploads/') ||
         fileOrDataUrl.startsWith('/assets/')
       ) {
+        return fileOrDataUrl; // Already a URL
+      }
+      
+      // Data URL fallback handling
+      const matches = fileOrDataUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+      if (matches && matches.length === 3) {
+         mimeType = matches[1];
+         ext = mimeType.split('/')[1] || 'jpg';
+         
+         const byteCharacters = atob(matches[2]);
+         const byteNumbers = new Array(byteCharacters.length);
+         for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+         }
+         const byteArray = new Uint8Array(byteNumbers);
+         fileToUpload = new Blob([byteArray], { type: mimeType });
+      } else {
         return fileOrDataUrl;
       }
-      dataUrl = fileOrDataUrl;
     } else {
-      // It's a File: compress it first
-      dataUrl = await compressImage(fileOrDataUrl);
+      fileToUpload = await compressImage(fileOrDataUrl);
+      mimeType = fileOrDataUrl.type === 'image/png' ? 'image/png' : 'image/jpeg';
+      ext = fileOrDataUrl.type === 'image/png' ? 'png' : 'jpg';
     }
 
-    // Send to backend /api/upload
-    const res = await fetch('/api/upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        dataUrl,
-        filename: filenameHint,
-      }),
-    });
+    const cleanName = filenameHint.replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 20) || 'photo';
+    const fileName = `${cleanName}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
 
-    if (res.ok) {
-      const json = await res.json();
-      if (json.success && json.url) {
-        return json.url;
-      }
+    const { data, error } = await supabase.storage
+      .from('wedding-photos')
+      .upload(fileName, fileToUpload, {
+        contentType: mimeType,
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+    if (error) {
+      console.error('Supabase upload error:', error);
+      throw error;
     }
 
-    // If server upload returned error, fallback to compressed data URL
-    return dataUrl;
+    const { data: publicUrlData } = supabase.storage
+      .from('wedding-photos')
+      .getPublicUrl(fileName);
+
+    return publicUrlData.publicUrl;
   } catch (err) {
     console.error('Error during photo upload:', err);
+    // Return original string if it fails
     if (typeof fileOrDataUrl === 'string') return fileOrDataUrl;
-    return await compressImage(fileOrDataUrl);
+    
+    // In worst case, if upload to Supabase fails and it was a file, 
+    // convert it to dataUrl so it doesn't break entirely in the UI.
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string || '');
+      reader.readAsDataURL(fileOrDataUrl);
+    });
   }
 }

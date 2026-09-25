@@ -1,6 +1,6 @@
 import React from 'react';
 import { useWeddingData } from '../context/WeddingDataContext';
-import { Heart, Sparkles } from 'lucide-react';
+import { Heart } from 'lucide-react';
 import { WeddingLogo } from './WeddingLogo';
 
 export const CoupleSection: React.FC = () => {
@@ -50,7 +50,7 @@ export const CoupleSection: React.FC = () => {
               />
             </div>
 
-            <span className="text-[#c5a059] text-xl mb-3">✦</span>
+            <div className="w-8 h-[1px] bg-[#c5a059] mb-4" />
 
             <blockquote className="font-editorial text-lg sm:text-xl text-[#1b1c1a] italic leading-[1.45] tracking-[0.01em] mb-4">
               « {details.centerQuote} »

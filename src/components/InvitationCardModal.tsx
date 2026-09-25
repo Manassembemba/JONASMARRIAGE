@@ -17,7 +17,6 @@ import {
   Calendar,
   Clock,
   MapPin,
-  Sparkles,
   ShieldCheck,
   UserCheck,
 } from 'lucide-react';
@@ -136,7 +135,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
         <div className="flex items-center justify-between px-5 py-4 bg-gradient-to-r from-[#1b1c1a] to-[#2c271e] text-white border-b border-[#c5a059]/30">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-[#c5a059]/20 border border-[#c5a059]/40 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-[#ffdea5]" />
+              <ShieldCheck className="w-4 h-4 text-[#ffdea5]" />
             </div>
             <div>
               <h3 className="font-editorial text-base sm:text-lg font-semibold tracking-wide text-[#ffdea5]">
@@ -181,7 +180,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               </h4>
               <div className="flex items-center justify-center gap-2 mt-1.5">
                 <div className="w-12 h-[1px] bg-[#c5a059]" />
-                <span className="text-[#c5a059] text-xs">❖</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-[#c5a059]" />
                 <div className="w-12 h-[1px] bg-[#c5a059]" />
               </div>
             </div>

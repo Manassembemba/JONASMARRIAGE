@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Share2, Sparkles, MapPin } from 'lucide-react';
+import { Share2, Heart } from 'lucide-react';
 import { useWeddingData } from '../context/WeddingDataContext';
 import { shareOnWhatsApp } from '../utils/calendar';
 import { WeddingLogo } from './WeddingLogo';
@@ -114,7 +114,7 @@ export const Hero: React.FC = () => {
             </div>
 
             <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/15 backdrop-blur-md border border-white/20 text-white text-xs tracking-wider">
-              <Sparkles className="w-3.5 h-3.5 text-[#ffdea5]" />
+              <Heart className="w-3.5 h-3.5 text-[#ffdea5] fill-[#ffdea5]/50" />
               <span className="font-medium">{details.dateString}</span>
             </div>
           </div>

@@ -8,7 +8,7 @@ import {
   ShieldAlert,
   Users,
   MessageSquare,
-  Sparkles,
+  ShieldCheck,
 } from 'lucide-react';
 import { useWeddingData } from '../context/WeddingDataContext';
 
@@ -259,7 +259,7 @@ export const SensitiveDataLock: React.FC<SensitiveDataLockProps> = ({
               </button>
             </div>
             <p className="text-[10px] text-[#938b7d] mt-1.5 flex items-center justify-center gap-1">
-              <Sparkles className="w-3 h-3 text-[#c5a059]" />
+              <ShieldCheck className="w-3 h-3 text-[#775a19]" />
               <span>Modifiable à tout moment dans l'onglet « Sécurité & PIN »</span>
             </p>
           </div>

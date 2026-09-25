@@ -13,7 +13,6 @@ import {
   Plus,
   Minus,
   Send,
-  Sparkles,
   AlertCircle,
   Download,
   MessageCircle,
@@ -311,8 +310,8 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({ onRsvpSubmitted }) => 
           ) : (
             /* Écran de confirmation après validation (Cahier des charges 10) */
             <div className="py-10 text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
-              <div className="w-16 h-16 rounded-full bg-[#c5a059]/20 text-[#775a19] mx-auto flex items-center justify-center text-3xl border border-[#c5a059]/40 shadow-inner">
-                <Sparkles className="w-8 h-8 text-[#c5a059]" />
+              <div className="w-16 h-16 rounded-full bg-[#c5a059]/20 text-[#775a19] mx-auto flex items-center justify-center border border-[#c5a059]/40 shadow-inner">
+                <Check className="w-8 h-8 text-[#775a19]" />
               </div>
 
               <h3 className="font-editorial text-2xl sm:text-3xl text-[#1b1c1a] font-semibold">

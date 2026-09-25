@@ -27,7 +27,6 @@ import {
   AlertTriangle,
   ExternalLink,
   BookOpen,
-  Sparkles,
   Type,
   Lock,
   KeyRound,
@@ -502,7 +501,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       title: 'Nouveau Chapitre',
       subtitle: `Chapitre ${storyForm.length + 1} — Récit`,
       description: 'Racontez ici ce moment marquant de votre relation...',
-      icon: '✦',
+      icon: String(storyForm.length + 1),
     };
     setStoryForm([...storyForm, newMilestone]);
   };
@@ -1588,7 +1587,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               {/* SECTION 1: ACCUEIL & HERO */}
               <div className="bg-white p-5 rounded-xl border border-[#c5a059]/20 shadow-2xs space-y-4">
                 <h4 className="text-xs font-bold uppercase tracking-wider text-[#775a19] border-b border-[#c5a059]/15 pb-2 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4" />
+                  <FileText className="w-4 h-4" />
                   1. Textes d'Accueil & En-tête (Hero)
                 </h4>
 
