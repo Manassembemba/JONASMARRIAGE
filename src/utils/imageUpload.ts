@@ -119,15 +119,44 @@ export async function uploadPhotoToServer(fileOrDataUrl: File | string, filename
     return publicUrlData.publicUrl;
   } catch (err) {
     console.error('Error during photo upload:', err);
-    // Return original string if it fails
     if (typeof fileOrDataUrl === 'string') return fileOrDataUrl;
-    
-    // In worst case, if upload to Supabase fails and it was a file, 
-    // convert it to dataUrl so it doesn't break entirely in the UI.
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => resolve(e.target?.result as string || '');
       reader.readAsDataURL(fileOrDataUrl);
     });
   }
+}
+
+/**
+ * Upload an audio file (mp3/wav/ogg) to Supabase Storage bucket "wedding-photos"
+ * Returns a public persistent URL to use as musicUrl
+ */
+export async function uploadMusicToServer(file: File): Promise<string> {
+  const allowed = ['audio/mpeg', 'audio/mp3', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/m4a'];
+  if (!allowed.includes(file.type) && !file.name.match(/\.(mp3|wav|ogg|aac|m4a)$/i)) {
+    throw new Error('Format audio non supporté. Utilisez mp3, wav, ogg ou aac.');
+  }
+
+  const ext = file.name.split('.').pop() || 'mp3';
+  const fileName = `music_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('wedding-photos')
+    .upload(fileName, file, {
+      contentType: file.type || 'audio/mpeg',
+      cacheControl: '3600',
+      upsert: false,
+    });
+
+  if (error) {
+    console.error('Supabase music upload error:', error);
+    throw error;
+  }
+
+  const { data: publicUrlData } = supabase.storage
+    .from('wedding-photos')
+    .getPublicUrl(fileName);
+
+  return publicUrlData.publicUrl;
 }

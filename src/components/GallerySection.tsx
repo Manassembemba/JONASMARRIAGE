@@ -8,6 +8,10 @@ export const GallerySection: React.FC = () => {
   const items = galleryItems && galleryItems.length > 0 ? galleryItems : DEFAULT_GALLERY_ITEMS;
   const [selectedPhotoIndex, setSelectedPhotoIndex] = useState<number | null>(null);
 
+  if (!items || items.length === 0) {
+    return null;
+  }
+
   const openLightbox = (index: number) => {
     setSelectedPhotoIndex(index);
   };

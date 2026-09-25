@@ -28,6 +28,7 @@ export interface WeddingDetails {
   footerMessage?: string; // e.g. "Nous serions infiniment honorés..."
   monogramUrl: string;
   coupleHeroPhoto: string;
+  musicUrl?: string; // URL Supabase de la musique de fond (mp3/wav)
 }
 
 export interface RSVPData {

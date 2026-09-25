@@ -22,11 +22,17 @@ export const CoupleSection: React.FC = () => {
           {/* Le Marié */}
           <div className="lg:col-span-4 flex flex-col items-center text-center bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-black/5 border border-[#c5a059]/25 group transition-all duration-300 hover:shadow-2xl hover:border-[#c5a059]/50">
             <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden mb-6 shadow-md border-2 border-[#c5a059]/40 p-1 bg-white">
-              <img
-                src={details.groom.photo}
-                alt={details.groom.fullName}
-                className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover:scale-105"
-              />
+              {details.groom.photo ? (
+                <img
+                  src={details.groom.photo}
+                  alt={details.groom.fullName}
+                  className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#f5f0e6] to-[#eae3d2] flex items-center justify-center text-[#775a19] text-3xl font-editorial font-bold shadow-inner">
+                  {details.groom.shortName?.charAt(0) || 'J'}
+                </div>
+              )}
             </div>
             <span className="text-[11px] font-semibold tracking-[0.2em] leading-normal text-[#775a19] uppercase mb-1">
               {details.groom.role}
@@ -66,11 +72,17 @@ export const CoupleSection: React.FC = () => {
           {/* La Mariée */}
           <div className="lg:col-span-4 flex flex-col items-center text-center bg-white p-6 sm:p-8 rounded-2xl shadow-xl shadow-black/5 border border-[#c5a059]/25 group transition-all duration-300 hover:shadow-2xl hover:border-[#c5a059]/50">
             <div className="w-48 h-48 sm:w-56 sm:h-56 rounded-full overflow-hidden mb-6 shadow-md border-2 border-[#c5a059]/40 p-1 bg-white">
-              <img
-                src={details.bride.photo}
-                alt={details.bride.fullName}
-                className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover:scale-105"
-              />
+              {details.bride.photo ? (
+                <img
+                  src={details.bride.photo}
+                  alt={details.bride.fullName}
+                  className="w-full h-full object-cover rounded-full transition-transform duration-500 group-hover:scale-105"
+                />
+              ) : (
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-[#f5f0e6] to-[#eae3d2] flex items-center justify-center text-[#775a19] text-3xl font-editorial font-bold shadow-inner">
+                  {details.bride.shortName?.charAt(0) || 'F'}
+                </div>
+              )}
             </div>
             <span className="text-[11px] font-semibold tracking-[0.2em] leading-normal text-[#775a19] uppercase mb-1">
               {details.bride.role}

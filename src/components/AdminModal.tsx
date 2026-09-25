@@ -197,7 +197,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     emotionalQuote1: details.emotionalQuote1 || '« Une nouvelle aventure commence...',
     emotionalQuote2: details.emotionalQuote2 || 'Et nous aimerions la partager avec vous. »',
     footerMessage: details.footerMessage || "Merci de partager avec nous ce moment unique, prélude d'une éternelle célébration de notre amour.",
-    coupleHeroPhoto: details.coupleHeroPhoto || '/assets/couple_photo.jpg',
+    coupleHeroPhoto: details.coupleHeroPhoto || '',
   });
 
   // Local state for Story milestones chapters
@@ -259,7 +259,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       emotionalQuote1: details.emotionalQuote1 ?? '« Une nouvelle aventure commence...',
       emotionalQuote2: details.emotionalQuote2 ?? 'Et nous aimerions la partager avec vous. »',
       footerMessage: details.footerMessage ?? "Merci de partager avec nous ce moment unique, prélude d'une éternelle célébration de notre amour.",
-      coupleHeroPhoto: details.coupleHeroPhoto ?? '/assets/couple_photo.jpg',
+      coupleHeroPhoto: details.coupleHeroPhoto ?? '',
     });
     setStoryForm(storyMilestones);
     setCoupleForm({
@@ -1685,7 +1685,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                         type="text"
                         value={presentationForm.coupleHeroPhoto}
                         onChange={(e) => setPresentationForm({ ...presentationForm, coupleHeroPhoto: e.target.value })}
-                        placeholder="/assets/couple_photo.jpg"
+                        placeholder="https://...supabase.co/... ou téléversez ci-dessus"
                         className="w-full px-3 py-1.5 text-xs rounded-md border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                       />
                     </div>
@@ -2025,7 +2025,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           groom: { ...coupleForm.groom, photo: e.target.value },
                         })
                       }
-                      placeholder="/assets/groom_jonas.jpg"
+                      placeholder="https://...supabase.co/... ou téléversez ci-dessus"
                       className="w-full px-3 py-1.5 text-xs rounded-md border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                       required
                     />
@@ -2143,7 +2143,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                           bride: { ...coupleForm.bride, photo: e.target.value },
                         })
                       }
-                      placeholder="/assets/bride_flora.jpg"
+                      placeholder="https://...supabase.co/... ou téléversez ci-dessus"
                       className="w-full px-3 py-1.5 text-xs rounded-md border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                       required
                     />

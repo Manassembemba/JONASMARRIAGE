@@ -13,14 +13,14 @@ export const WEDDING_DETAILS: WeddingDetails = {
     fullName: 'Madikani Mbidi Jonas',
     shortName: 'Jonas',
     role: 'Le Marié',
-    photo: '/assets/groom_jonas.jpg',
+    photo: '', // À configurer par l'administrateur
     quote: '« Dès le premier instant où nos regards se sont croisés, j\'ai su que mon cœur avait enfin trouvé son havre de paix. Flora incarne l\'élégance, la force et la douceur infinie avec laquelle je souhaite bâtir chaque lendemain de ma vie. »',
   },
   bride: {
     fullName: 'Matelo Sanga Flora',
     shortName: 'Flora',
     role: 'La Mariée',
-    photo: '/assets/bride_flora.jpg',
+    photo: '', // À configurer par l'administrateur
     quote: '« Jonas est mon roc, mon confident et mon plus bel allié. Sa générosité d\'esprit et sa foi illuminent mon quotidien. C\'est avec une fierté immense et une joie incommensurable que je lui confie ma main et ma destinée. »',
   },
   centerQuote: 'Deux cœurs, une promesse, une nouvelle histoire à écrire ensemble.',
@@ -29,7 +29,7 @@ export const WEDDING_DETAILS: WeddingDetails = {
   dateFormatted: '29 & 31 Octobre 2026',
   date1: 'Jeudi 29 Octobre 2026',
   date2: 'Samedi 31 Octobre 2026',
-  targetDateTime: '2026-10-29T11:00:00+01:00', // Kinshasa time GMT+1
+  targetDateTime: '2026-10-29T11:00:00+01:00',
   cityCountry: 'KINSHASA, RDC',
   announcementText: 'Nous avons le bonheur de vous annoncer notre mariage',
   heroBadge: 'Célébration Nuptiale Privée',
@@ -40,11 +40,15 @@ export const WEDDING_DETAILS: WeddingDetails = {
   emotionalQuote1: '« Une nouvelle aventure commence...',
   emotionalQuote2: 'Et nous aimerions la partager avec vous. »',
   footerMessage: 'Nous serions infiniment honorés de votre présence pour célébrer notre union et écrire ensemble les premières pages de notre nouvelle vie.',
-  monogramUrl: '/assets/monogram_jf.svg',
-  coupleHeroPhoto: '/assets/couple_photo.jpg',
+  monogramUrl: '', // À configurer par l'administrateur
+  coupleHeroPhoto: '', // À configurer par l'administrateur
+  musicUrl: '', // À configurer par l'administrateur
 };
 
 export const DEFAULT_WEDDING_DETAILS = WEDDING_DETAILS;
+
+// Galerie vide par défaut — l'admin ajoute ses propres photos depuis Supabase
+export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [];
 
 export const STORY_MILESTONES: TimelineMilestone[] = [
   {
@@ -124,58 +128,8 @@ export const VENUES_DATA = [
   },
 ];
 
-export const GALLERY_ITEMS = [
-  {
-    id: 'couple-main',
-    title: 'Jonas & Flora — Ensemble vers le Grand Jour',
-    subtitle: 'Kinshasa • 2026',
-    url: '/assets/couple_photo.jpg',
-    span: 'col-span-12 md:col-span-7',
-    aspect: 'aspect-[4/3]',
-  },
-  {
-    id: 'couple-embrace',
-    title: 'La Promesse et l\'Alliance',
-    subtitle: 'Deux cœurs, un serment éternel',
-    url: '/assets/couple_embrace.jpg',
-    span: 'col-span-12 md:col-span-5',
-    aspect: 'aspect-square',
-  },
-  {
-    id: 'flora-portrait',
-    title: 'La Grâce et La Douceur',
-    subtitle: 'Flora la mariée',
-    url: '/assets/bride_flora.jpg',
-    span: 'col-span-12 md:col-span-6',
-    aspect: 'aspect-square',
-  },
-  {
-    id: 'jonas-portrait',
-    title: 'Force et Dévouement',
-    subtitle: 'Jonas le marié',
-    url: '/assets/groom_jonas.jpg',
-    span: 'col-span-12 md:col-span-6',
-    aspect: 'aspect-square',
-  },
-  {
-    id: 'rings-macro',
-    title: 'Alliances & Écrin d\'Or',
-    subtitle: 'Symbole du serment éternel',
-    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBAynKpSp_sTB2l3o6wakFf7M0soHi7DoXJIzmZ3J0bLn0-QKcRAeUdtM1Zy3SLnent0njmpR3hzfrQQ1_7OnSGkKjw41xLZ1wV4jV2E64ecV6Lcquk1zhCsIfc1zBlDT7KPks7vPkdYMaopKeIM4tImNcFUXBCt8NIZR9HNfb2z3t8duTnx9bYkUv4Z2nAVCyDk25QxEroNNVUgYl5BWU7WuQad9dT_CvMljEs-XhnCsZDe86GwTK2',
-    span: 'col-span-12 md:col-span-6',
-    aspect: 'aspect-[16/9]',
-  },
-  {
-    id: 'flowers-bouquet',
-    title: 'Fleurs & Précieux Atours',
-    subtitle: 'Bouquet nuptial champêtre et raffiné',
-    url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuD86_3_xzTSkFc4BNk4clm3v4ACKQMghwprCSCqhNBXRcnUO9wI7ue3_IQP5M8emOxNqiz1kkGTEpNfFm2uyI8TjlqENTHpbFlBhboyPvIxkCthPZqpeb4go4UtiHjSG7gqnX3ZC9N-oKycmM7NjWvDFBdLg-os1R0_wI5YOUP2QBZK6BonG_SCs7-LkvRmDxYSm4j6HsK8liTr_oj4CqBROk15kZYJjuLKhrVB_0ngiTm7qiSoBZ91',
-    span: 'col-span-12 md:col-span-6',
-    aspect: 'aspect-[16/9]',
-  },
-];
 
-export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = GALLERY_ITEMS;
+
 
 export const INITIAL_GUESTBOOK: GuestbookMessage[] = [
   {

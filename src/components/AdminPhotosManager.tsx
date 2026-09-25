@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { WeddingDetails, GalleryItem } from '../types';
 import {
   Camera,
@@ -15,8 +15,10 @@ import {
   Layers,
   Database,
   Loader2,
+  Music,
+  Volume2,
 } from 'lucide-react';
-import { uploadPhotoToServer } from '../utils/imageUpload';
+import { uploadPhotoToServer, uploadMusicToServer } from '../utils/imageUpload';
 import { WeddingLogo } from './WeddingLogo';
 
 interface AdminPhotosManagerProps {
@@ -36,11 +38,14 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
   showNotification,
   openDeleteModal,
 }) => {
-  // Local state for official photos
-  const [coupleHeroPhoto, setCoupleHeroPhoto] = useState(details.coupleHeroPhoto || '/assets/couple_photo.jpg');
-  const [groomPhoto, setGroomPhoto] = useState(details.groom?.photo || '/assets/groom_jonas.jpg');
-  const [bridePhoto, setBridePhoto] = useState(details.bride?.photo || '/assets/bride_flora.jpg');
+  // Local state for official photos (no local /assets fallback — only Supabase URLs)
+  const [coupleHeroPhoto, setCoupleHeroPhoto] = useState(details.coupleHeroPhoto || '');
+  const [groomPhoto, setGroomPhoto] = useState(details.groom?.photo || '');
+  const [bridePhoto, setBridePhoto] = useState(details.bride?.photo || '');
   const [monogramUrl, setMonogramUrl] = useState(details.monogramUrl || '');
+  const [musicUrl, setMusicUrl] = useState(details.musicUrl || '');
+  const [isUploadingMusic, setIsUploadingMusic] = useState(false);
+  const musicInputRef = useRef<HTMLInputElement>(null);
 
   // Local state for gallery photos
   const [galleryList, setGalleryList] = useState<GalleryItem[]>(galleryItems);
@@ -49,13 +54,14 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
   const [uploadingTarget, setUploadingTarget] = useState<string | null>(null);
   const [previewPhotoModal, setPreviewPhotoModal] = useState<string | null>(null);
 
-  // Sync state whenever context data changes (from server database)
+  // Sync state whenever Supabase data changes
   useEffect(() => {
-    setCoupleHeroPhoto(details.coupleHeroPhoto ?? '/assets/couple_photo.jpg');
-    setGroomPhoto(details.groom?.photo ?? '/assets/groom_jonas.jpg');
-    setBridePhoto(details.bride?.photo ?? '/assets/bride_flora.jpg');
+    setCoupleHeroPhoto(details.coupleHeroPhoto ?? '');
+    setGroomPhoto(details.groom?.photo ?? '');
+    setBridePhoto(details.bride?.photo ?? '');
     setMonogramUrl(details.monogramUrl ?? '');
-  }, [details.coupleHeroPhoto, details.groom?.photo, details.bride?.photo, details.monogramUrl]);
+    setMusicUrl(details.musicUrl ?? '');
+  }, [details.coupleHeroPhoto, details.groom?.photo, details.bride?.photo, details.monogramUrl, details.musicUrl]);
 
   useEffect(() => {
     if (galleryItems && galleryItems.length > 0) {
@@ -70,7 +76,32 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
   const [newSpan, setNewSpan] = useState<'col-span-12 md:col-span-7' | 'col-span-12 md:col-span-6' | 'col-span-12 md:col-span-5' | 'col-span-12'>('col-span-12 md:col-span-6');
   const [newAspect, setNewAspect] = useState<'aspect-[4/3]' | 'aspect-square' | 'aspect-[16/9]'>('aspect-[4/3]');
 
-  // Dedicated official photo upload with automatic SQLite persistence
+  // Music upload handler
+  const handleMusicUpload = async (file: File) => {
+    if (!file) return;
+    setIsUploadingMusic(true);
+    showNotification('Envoi de la musique sur Supabase...');
+    try {
+      const url = await uploadMusicToServer(file);
+      setMusicUrl(url);
+      await onUpdateDetails({ musicUrl: url });
+      showNotification('🎵 Musique de mariage enregistrée avec succès !');
+    } catch (err: any) {
+      console.error(err);
+      showNotification('Erreur lors du téléversement audio : ' + (err.message || 'Format non supporté'));
+    } finally {
+      setIsUploadingMusic(false);
+    }
+  };
+
+  const handleRemoveMusic = async () => {
+    setMusicUrl('');
+    await onUpdateDetails({ musicUrl: '' });
+    showNotification('Musique supprimée.');
+  };
+
+  // Dedicated official photo upload with Supabase persistence
+
   const handleOfficialPhotoUpload = async (
     file: File,
     type: 'hero' | 'groom' | 'bride' | 'monogram'
@@ -297,7 +328,7 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 mt-2 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-300 shadow-2xs">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <Database className="w-3 h-3 text-emerald-700" />
-              <span>Persistance SQLite & Stockage Serveur Actifs</span>
+              <span>Stockage Supabase Cloud Actif</span>
             </div>
           </div>
         </div>
@@ -400,13 +431,13 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                       handleSaveOfficialUrl('hero');
                     }
                   }}
-                  placeholder="/assets/couple_photo.jpg"
+                  placeholder="https://...supabase.co/... ou téléversez ci-dessus"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
                 <button
                   type="button"
                   onClick={() => handleSaveOfficialUrl('hero')}
-                  title="Enregistrer cette photo dans la base SQLite"
+                  title="Enregistrer cette photo dans Supabase"
                   className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
                 >
                   <Check className="w-3 h-3" />
@@ -491,13 +522,13 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                       handleSaveOfficialUrl('groom');
                     }
                   }}
-                  placeholder="/assets/groom_jonas.jpg"
+                  placeholder="https://...supabase.co/... ou téléversez ci-dessus"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
                 <button
                   type="button"
                   onClick={() => handleSaveOfficialUrl('groom')}
-                  title="Enregistrer cette photo dans la base SQLite"
+                  title="Enregistrer cette photo dans Supabase"
                   className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
                 >
                   <Check className="w-3 h-3" />
@@ -582,13 +613,13 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                       handleSaveOfficialUrl('bride');
                     }
                   }}
-                  placeholder="/assets/bride_flora.jpg"
+                  placeholder="https://...supabase.co/... ou téléversez ci-dessus"
                   className="flex-1 px-2.5 py-1.5 text-xs rounded-lg border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden"
                 />
                 <button
                   type="button"
                   onClick={() => handleSaveOfficialUrl('bride')}
-                  title="Enregistrer cette photo dans la base SQLite"
+                  title="Enregistrer cette photo dans Supabase"
                   className="px-2.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold cursor-pointer shadow-2xs flex items-center gap-1 shrink-0"
                 >
                   <Check className="w-3 h-3" />
@@ -830,7 +861,7 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                     type="text"
                     value={newUrl}
                     onChange={(e) => setNewUrl(e.target.value)}
-                    placeholder="/assets/photo.jpg ou https://..."
+                    placeholder="https://...supabase.co/... ou choisissez un fichier"
                     className="flex-1 px-3 py-2 text-xs rounded-lg border border-[#c5a059]/40 bg-white focus:border-[#775a19] focus:outline-hidden"
                     required
                   />
@@ -1087,13 +1118,95 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
         </div>
       )}
 
-      {/* Uploading & Persisting Progress Floating Indicator */}
-      {uploadingTarget && (
+      {/* ═══════════════════════ SECTION MUSIQUE ══════════════════════════ */}
+      <div className="bg-white rounded-2xl border border-[#c5a059]/25 shadow-xs overflow-hidden">
+        <div className="px-6 pt-5 pb-4 border-b border-[#f0ebe3] flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#775a19]/10 flex items-center justify-center text-[#775a19] shrink-0">
+            <Music className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h4 className="font-semibold text-sm text-[#1b1c1a]">Musique de Fond du Mariage</h4>
+            <p className="text-xs text-[#4e4639] mt-0.5">Téléversez un fichier MP3/WAV — il sera stocké sur Supabase et joué automatiquement pour tous les invités.</p>
+          </div>
+        </div>
+
+        <div className="p-6 space-y-4">
+          {musicUrl ? (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                  <Volume2 className="w-4 h-4 text-emerald-700" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-emerald-800">Musique active</p>
+                  <p className="text-[11px] text-emerald-600 truncate max-w-[240px]">{musicUrl.split('/').pop()}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <audio controls src={musicUrl} className="h-8 w-40 sm:w-48" />
+                <button
+                  type="button"
+                  onClick={() => musicInputRef.current?.click()}
+                  disabled={isUploadingMusic}
+                  className="px-3 py-1.5 rounded-lg bg-[#775a19]/15 hover:bg-[#775a19]/25 text-[#775a19] text-xs font-semibold transition-colors border border-[#c5a059]/40 cursor-pointer disabled:opacity-50"
+                >
+                  Changer
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveMusic}
+                  className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition-colors border border-red-200 cursor-pointer"
+                >
+                  Supprimer
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center gap-3 py-8 border-2 border-dashed border-[#c5a059]/30 rounded-xl bg-[#faf8f4]">
+              <div className="w-12 h-12 rounded-full bg-[#775a19]/10 flex items-center justify-center">
+                <Music className="w-6 h-6 text-[#775a19]" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-[#1b1c1a]">Aucune musique configurée</p>
+                <p className="text-xs text-[#4e4639] mt-1">Le lecteur de musique sera masqué pour les invités jusqu'à ce qu'une musique soit ajoutée.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => musicInputRef.current?.click()}
+                disabled={isUploadingMusic}
+                className="mt-1 inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-60"
+              >
+                {isUploadingMusic ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                {isUploadingMusic ? 'Envoi en cours...' : 'Choisir un fichier audio'}
+              </button>
+            </div>
+          )}
+
+          <input
+            ref={musicInputRef}
+            type="file"
+            accept="audio/mpeg,audio/wav,audio/ogg,audio/aac,.mp3,.wav,.ogg,.aac,.m4a"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleMusicUpload(file);
+              e.target.value = '';
+            }}
+          />
+
+          <p className="text-[11px] text-[#a09070] text-center">
+            Formats acceptés : MP3, WAV, OGG, AAC • Taille recommandée : moins de 10 Mo
+          </p>
+        </div>
+      </div>
+
+      {/* Uploading Progress Floating Indicator */}
+      {(uploadingTarget || isUploadingMusic) && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#1b1c1a] text-white px-5 py-3.5 rounded-2xl shadow-2xl flex items-center gap-3.5 border border-[#c5a059]/60 animate-bounce">
           <Loader2 className="w-5 h-5 text-[#c5a059] animate-spin shrink-0" />
           <div>
-            <p className="text-xs font-semibold text-white">Téléversement & Persistance en cours</p>
-            <p className="text-[11px] text-stone-300">Écriture sur le disque serveur et synchronisation SQLite...</p>
+            <p className="text-xs font-semibold text-white">Téléversement en cours</p>
+            <p className="text-[11px] text-stone-300">Envoi vers Supabase Storage...</p>
           </div>
         </div>
       )}

@@ -1,32 +1,56 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX, Music, Disc3 } from 'lucide-react';
+import { useWeddingData } from '../context/WeddingDataContext';
 
 export const MusicPlayer: React.FC = () => {
+  const { details } = useWeddingData();
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const currentMusicUrl = useRef<string>('');
 
   useEffect(() => {
-    // Initialiser l'élément Audio
-    const audio = new Audio('/assets/wedding_song.mp3');
+    const musicUrl = details.musicUrl;
+
+    // Pas de musique configurée par l'admin — ne rien faire
+    if (!musicUrl) {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+        audioRef.current = null;
+        setIsPlaying(false);
+        setShowToast(false);
+      }
+      return;
+    }
+
+    // Si c'est la même URL, ne pas recréer l'audio
+    if (currentMusicUrl.current === musicUrl && audioRef.current) return;
+    currentMusicUrl.current = musicUrl;
+
+    // Nettoyer l'ancien audio si besoin
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
+    }
+
+    const audio = new Audio(musicUrl);
     audio.loop = true;
     audio.volume = 0.65;
     audioRef.current = audio;
 
-    // Tentative de lecture automatique au montage
     const tryAutoplay = async () => {
       try {
         await audio.play();
         setIsPlaying(true);
         setHasInteracted(true);
+        setShowToast(false);
       } catch {
-        // Politique Autoplay des navigateurs : bloquée tant qu'il n'y a pas d'interaction
         setIsPlaying(false);
         setShowToast(true);
 
-        // Déclencher dès la première interaction (clic, scroll, touche)
         const handleFirstInteraction = () => {
           if (audioRef.current && audioRef.current.paused) {
             audioRef.current
@@ -36,9 +60,7 @@ export const MusicPlayer: React.FC = () => {
                 setHasInteracted(true);
                 setShowToast(false);
               })
-              .catch(() => {
-                // Ignore
-              });
+              .catch(() => {});
           }
           cleanupListeners();
         };
@@ -63,25 +85,24 @@ export const MusicPlayer: React.FC = () => {
       audio.pause();
       audio.src = '';
     };
-  }, []);
+  }, [details.musicUrl]);
+
+  // Ne rien afficher si aucune musique configurée
+  if (!details.musicUrl) return null;
 
   const togglePlay = () => {
     if (!audioRef.current) return;
-
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current
-        .play()
+      audioRef.current.play()
         .then(() => {
           setIsPlaying(true);
           setHasInteracted(true);
           setShowToast(false);
         })
-        .catch((err) => {
-          console.error('Erreur de lecture audio :', err);
-        });
+        .catch((err) => console.error('Erreur de lecture audio :', err));
     }
   };
 
@@ -95,7 +116,6 @@ export const MusicPlayer: React.FC = () => {
 
   return (
     <>
-      {/* Toast d'incitation si autoplay restreint par le navigateur */}
       {showToast && !hasInteracted && (
         <div
           onClick={togglePlay}
@@ -106,7 +126,6 @@ export const MusicPlayer: React.FC = () => {
         </div>
       )}
 
-      {/* Lecteur de Musique Flottant Luxe */}
       <div className="fixed bottom-6 right-5 z-40 flex items-center gap-2">
         <button
           type="button"
@@ -119,20 +138,14 @@ export const MusicPlayer: React.FC = () => {
           title={isPlaying ? 'Mettre la musique en pause' : 'Lancer la musique de mariage'}
           aria-label="Contrôle de la musique de mariage"
         >
-          {/* Disque vinyle tournant */}
           <div className="relative flex items-center justify-center">
             <Disc3
-              className={`w-5 h-5 transition-transform ${
-                isPlaying ? 'animate-spin text-[#c5a059]' : 'text-current'
-              }`}
+              className={`w-5 h-5 transition-transform ${isPlaying ? 'animate-spin text-[#c5a059]' : 'text-current'}`}
               style={{ animationDuration: isPlaying ? '3.5s' : '0s' }}
             />
-            {isPlaying && (
-              <span className="absolute w-1.5 h-1.5 rounded-full bg-[#1b1c1a]"></span>
-            )}
+            {isPlaying && <span className="absolute w-1.5 h-1.5 rounded-full bg-[#1b1c1a]"></span>}
           </div>
 
-          {/* Ondes Sonores (Equalizer) */}
           {isPlaying && !isMuted ? (
             <div className="flex items-end gap-[2px] h-3.5 px-0.5">
               <span className="w-[2px] bg-[#c5a059] rounded-full animate-pulse h-3"></span>
@@ -146,7 +159,6 @@ export const MusicPlayer: React.FC = () => {
             </span>
           )}
 
-          {/* Bouton Muet / Son */}
           {isPlaying && (
             <span
               onClick={toggleMute}

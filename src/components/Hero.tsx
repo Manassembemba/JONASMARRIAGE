@@ -95,11 +95,23 @@ export const Hero: React.FC = () => {
         {/* Grand Visuel Central des Futurs Mariés */}
         <div className="relative w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl shadow-[#775a19]/10 border border-[#c5a059]/30 group">
           <div className="aspect-[16/9] w-full overflow-hidden bg-[#e4e2de]">
-            <img
-              src={details.coupleHeroPhoto}
-              alt={`${details.groom.fullName} et ${details.bride.fullName}`}
-              className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
-            />
+            {details.coupleHeroPhoto ? (
+              <img
+                src={details.coupleHeroPhoto}
+                alt={`${details.groom.fullName} et ${details.bride.fullName}`}
+                className="w-full h-full object-cover object-top transition-transform duration-1000 group-hover:scale-105"
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-[#f5f0e6] to-[#eae3d2] text-[#775a19] p-8">
+                <Heart className="w-12 h-12 text-[#c5a059] mb-3 animate-pulse opacity-60" />
+                <p className="font-editorial text-xl sm:text-2xl text-[#1b1c1a] font-normal tracking-wide">
+                  {details.groom.shortName} & {details.bride.shortName}
+                </p>
+                <p className="text-xs text-[#775a19] mt-1.5 uppercase tracking-widest font-medium">
+                  Photo Officielle du Couple
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Bottom Luxury Plaque */}
