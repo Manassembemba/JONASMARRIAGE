@@ -12,21 +12,10 @@ export const MusicPlayer: React.FC = () => {
   const currentMusicUrl = useRef<string>('');
 
   useEffect(() => {
-    const musicUrl = details.musicUrl;
+    // Si l'admin a configuré une musique sur Supabase, on l'utilise, sinon musique par défaut
+    const musicUrl = details.musicUrl || '/assets/wedding_song.mp3';
 
-    // Pas de musique configurée par l'admin — ne rien faire
-    if (!musicUrl) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.src = '';
-        audioRef.current = null;
-        setIsPlaying(false);
-        setShowToast(false);
-      }
-      return;
-    }
-
-    // Si c'est la même URL, ne pas recréer l'audio
+    // Si c'est la même URL et qu'on a déjà l'audio, ne rien faire
     if (currentMusicUrl.current === musicUrl && audioRef.current) return;
     currentMusicUrl.current = musicUrl;
 
@@ -86,9 +75,6 @@ export const MusicPlayer: React.FC = () => {
       audio.src = '';
     };
   }, [details.musicUrl]);
-
-  // Ne rien afficher si aucune musique configurée
-  if (!details.musicUrl) return null;
 
   const togglePlay = () => {
     if (!audioRef.current) return;

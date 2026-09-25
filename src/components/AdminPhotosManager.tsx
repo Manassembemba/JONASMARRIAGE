@@ -1138,7 +1138,7 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                   <Volume2 className="w-4 h-4 text-emerald-700" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-emerald-800">Musique active</p>
+                  <p className="text-xs font-semibold text-emerald-800">Musique personnalisée active (Supabase)</p>
                   <p className="text-[11px] text-emerald-600 truncate max-w-[240px]">{musicUrl.split('/').pop()}</p>
                 </div>
               </div>
@@ -1155,30 +1155,36 @@ export const AdminPhotosManager: React.FC<AdminPhotosManagerProps> = ({
                 <button
                   type="button"
                   onClick={handleRemoveMusic}
-                  className="px-3 py-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold transition-colors border border-red-200 cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-stone-100 hover:bg-stone-200 text-[#4e4639] text-xs font-semibold transition-colors border border-stone-300 cursor-pointer"
+                  title="Revenir à la musique par défaut"
                 >
-                  Supprimer
+                  Rétablir défaut
                 </button>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center gap-3 py-8 border-2 border-dashed border-[#c5a059]/30 rounded-xl bg-[#faf8f4]">
-              <div className="w-12 h-12 rounded-full bg-[#775a19]/10 flex items-center justify-center">
-                <Music className="w-6 h-6 text-[#775a19]" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 bg-[#faf8f4] border border-[#c5a059]/30 rounded-xl p-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-9 h-9 rounded-full bg-[#775a19]/10 flex items-center justify-center shrink-0">
+                  <Music className="w-4 h-4 text-[#775a19]" />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-[#1b1c1a]">Musique du mariage par défaut active</p>
+                  <p className="text-[11px] text-[#775a19]">Chanson instrumentale du mariage (wedding_song.mp3)</p>
+                </div>
               </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-[#1b1c1a]">Aucune musique configurée</p>
-                <p className="text-xs text-[#4e4639] mt-1">Le lecteur de musique sera masqué pour les invités jusqu'à ce qu'une musique soit ajoutée.</p>
+              <div className="flex items-center gap-2 shrink-0">
+                <audio controls src="/assets/wedding_song.mp3" className="h-8 w-40 sm:w-48" />
+                <button
+                  type="button"
+                  onClick={() => musicInputRef.current?.click()}
+                  disabled={isUploadingMusic}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold shadow-xs transition-all cursor-pointer disabled:opacity-60"
+                >
+                  {isUploadingMusic ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
+                  <span>{isUploadingMusic ? 'Envoi...' : 'Remplacer (MP3)'}</span>
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => musicInputRef.current?.click()}
-                disabled={isUploadingMusic}
-                className="mt-1 inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-[#775a19] hover:bg-[#5f4714] text-white text-xs font-semibold shadow-sm transition-all cursor-pointer disabled:opacity-60"
-              >
-                {isUploadingMusic ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Upload className="w-3.5 h-3.5" />}
-                {isUploadingMusic ? 'Envoi en cours...' : 'Choisir un fichier audio'}
-              </button>
             </div>
           )}
 
