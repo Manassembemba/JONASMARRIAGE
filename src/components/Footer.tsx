@@ -71,6 +71,26 @@ export const Footer: React.FC<FooterProps> = () => {
           <a href="#livredor" className="hover:text-[#775a19] transition-colors">
             Livre d'or
           </a>
+          <span>•</span>
+          <a href="#cadeaux" className="hover:text-[#775a19] transition-colors">
+            Cadeaux & Soutien
+          </a>
+        </div>
+
+        {/* WhatsApp Direct Contact Badge */}
+        <div className="mb-8">
+          <a
+            href={`https://wa.me/${(details.contactPhone || '0823965480').replace(/\D/g, '').replace(/^0/, '243')}?text=${encodeURIComponent(
+              `Bonjour, je vous contacte au sujet du mariage de ${details.groom.shortName} & ${details.bride.shortName}.`
+            )}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-semibold transition-all duration-300 shadow-2xs hover:scale-105"
+            title="Ouvrir la conversation WhatsApp"
+          >
+            <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse"></span>
+            <span>Contact direct WhatsApp : <strong>{details.contactPhone || '0823965480'}</strong></span>
+          </a>
         </div>
 
         {/* Hairline */}

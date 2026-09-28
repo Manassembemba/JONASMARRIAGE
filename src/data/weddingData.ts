@@ -6,6 +6,7 @@ import {
   WeddingDetails,
   VenueData,
   GalleryItem,
+  GiftPayment,
 } from '../types';
 
 export const WEDDING_DETAILS: WeddingDetails = {
@@ -43,9 +44,41 @@ export const WEDDING_DETAILS: WeddingDetails = {
   monogramUrl: '', // À configurer par l'administrateur
   coupleHeroPhoto: '', // À configurer par l'administrateur
   musicUrl: '', // À configurer par l'administrateur
+  contactPhone: '0823965480',
 };
 
 export const DEFAULT_WEDDING_DETAILS = WEDDING_DETAILS;
+
+// Rubriques de paiement cadeaux & soutien par défaut
+export const DEFAULT_GIFT_PAYMENTS: GiftPayment[] = [
+  {
+    id: 'gift-mpesa-1',
+    provider: 'mpesa',
+    label: 'M-Pesa (Vodacom)',
+    phone: '0823965480',
+    recipientName: 'Madikani Mbidi Jonas',
+    description: 'Bénédiction nuptiale & soutien financier',
+    isActive: true,
+  },
+  {
+    id: 'gift-orange-1',
+    provider: 'orange',
+    label: 'Orange Money',
+    phone: '0823965480',
+    recipientName: 'Madikani Mbidi Jonas',
+    description: 'Envoi direct via Orange Money RDC',
+    isActive: true,
+  },
+  {
+    id: 'gift-airtel-1',
+    provider: 'airtel',
+    label: 'Airtel Money',
+    phone: '0823965480',
+    recipientName: 'Madikani Mbidi Jonas',
+    description: 'Envoi direct via Airtel Money RDC',
+    isActive: true,
+  },
+];
 
 // Galerie vide par défaut — l'admin ajoute ses propres photos depuis Supabase
 export const DEFAULT_GALLERY_ITEMS: GalleryItem[] = [];

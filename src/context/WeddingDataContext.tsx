@@ -9,6 +9,7 @@ import {
   GuestbookMessage,
   DbStatus,
   GalleryItem,
+  GiftPayment,
 } from '../types';
 import {
   DEFAULT_WEDDING_DETAILS,
@@ -16,6 +17,7 @@ import {
   VENUES_DATA as INITIAL_VENUES_DATA,
   STORY_MILESTONES as INITIAL_STORY_MILESTONES,
   DEFAULT_GALLERY_ITEMS,
+  DEFAULT_GIFT_PAYMENTS,
   INITIAL_RSVPS,
   INITIAL_GUESTBOOK,
 } from '../data/weddingData';
@@ -26,6 +28,7 @@ interface WeddingDataContextType {
   venues: VenueData[];
   storyMilestones: TimelineMilestone[];
   galleryItems: GalleryItem[];
+  giftPayments: GiftPayment[];
   rsvps: RSVPData[];
   guestbook: GuestbookMessage[];
   dbStatus: DbStatus | null;
@@ -48,6 +51,7 @@ interface WeddingDataContextType {
   updateVenues: (venues: VenueData[]) => Promise<boolean>;
   updateStoryMilestones: (milestones: TimelineMilestone[]) => Promise<boolean>;
   updateGalleryItems: (items: GalleryItem[]) => Promise<boolean>;
+  updateGiftPayments: (items: GiftPayment[]) => Promise<boolean>;
   addRsvp: (rsvp: RSVPData) => Promise<boolean>;
   updateRsvp: (rsvp: RSVPData) => Promise<boolean>;
   deleteRsvp: (id: string) => Promise<boolean>;
@@ -66,6 +70,7 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const [venues, setVenues] = useState<VenueData[]>(INITIAL_VENUES_DATA);
   const [storyMilestones, setStoryMilestones] = useState<TimelineMilestone[]>(INITIAL_STORY_MILESTONES);
   const [galleryItems, setGalleryItems] = useState<GalleryItem[]>(DEFAULT_GALLERY_ITEMS);
+  const [giftPayments, setGiftPayments] = useState<GiftPayment[]>(DEFAULT_GIFT_PAYMENTS);
   const [rsvps, setRsvps] = useState<RSVPData[]>(INITIAL_RSVPS);
   const [guestbook, setGuestbook] = useState<GuestbookMessage[]>(INITIAL_GUESTBOOK);
   const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
@@ -122,6 +127,7 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
       setVenues(await getSetting('venues', INITIAL_VENUES_DATA));
       setStoryMilestones(await getSetting('story_milestones', INITIAL_STORY_MILESTONES));
       setGalleryItems(await getSetting('gallery_items', DEFAULT_GALLERY_ITEMS));
+      setGiftPayments(await getSetting('gift_payments', DEFAULT_GIFT_PAYMENTS));
       setAdminPin(await getSetting('admin_pin', '2026'));
 
       const { data: fetchedRsvps } = await supabase.from('rsvps').select('*').order('created_at', { ascending: false });
@@ -204,6 +210,9 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   const updateGalleryItems = async (items: GalleryItem[]) => {
     setIsSaving(true); setGalleryItems(items); await setSetting('gallery_items', items); setLastSaved(new Date()); setIsSaving(false); return true;
   };
+  const updateGiftPayments = async (items: GiftPayment[]) => {
+    setIsSaving(true); setGiftPayments(items); await setSetting('gift_payments', items); setLastSaved(new Date()); setIsSaving(false); return true;
+  };
 
   const addRsvp = async (rsvp: RSVPData) => {
     setRsvps((prev) => [rsvp, ...prev]);
@@ -247,6 +256,7 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
     await setSetting('venues', INITIAL_VENUES_DATA);
     await setSetting('story_milestones', INITIAL_STORY_MILESTONES);
     await setSetting('gallery_items', DEFAULT_GALLERY_ITEMS);
+    await setSetting('gift_payments', DEFAULT_GIFT_PAYMENTS);
     
     await supabase.from('rsvps').delete().neq('id', 'dummy'); // empty table
     await supabase.from('guestbook').delete().neq('id', 'dummy');
@@ -262,11 +272,11 @@ export const WeddingDataProvider: React.FC<{ children: React.ReactNode }> = ({ c
   return (
     <WeddingDataContext.Provider
       value={{
-        details, programSteps, venues, storyMilestones, galleryItems, rsvps, guestbook, dbStatus,
+        details, programSteps, venues, storyMilestones, galleryItems, giftPayments, rsvps, guestbook, dbStatus,
         isLoading, isSaving, lastSaved, unreadRsvpsCount, unreadGuestbookCount, unreadTotalCount,
         isAdminUnlocked, setIsAdminUnlocked, verifyAdminPin, changeAdminPin, logoutAdmin,
         markRsvpAsRead, markGuestbookAsRead, markAllAsRead, updateDetails, updateProgramSteps,
-        updateVenues, updateStoryMilestones, updateGalleryItems, addRsvp, updateRsvp, deleteRsvp,
+        updateVenues, updateStoryMilestones, updateGalleryItems, updateGiftPayments, addRsvp, updateRsvp, deleteRsvp,
         addGuestbook, toggleGuestbookApproval, deleteGuestbook, resetToDefaults, refreshData,
       }}
     >

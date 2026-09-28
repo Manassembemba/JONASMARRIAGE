@@ -16,9 +16,11 @@ import { GallerySection } from './components/GallerySection';
 import { EmotionalBanner } from './components/EmotionalBanner';
 import { RsvpSection } from './components/RsvpSection';
 import { GuestbookSection } from './components/GuestbookSection';
+import { GiftSection } from './components/GiftSection';
 import { Footer } from './components/Footer';
 import { AdminModal } from './components/AdminModal';
 import { MusicPlayer } from './components/MusicPlayer';
+import { WhatsAppButton } from './components/WhatsAppButton';
 import { RSVPData, GuestbookMessage } from './types';
 
 function WeddingApp() {
@@ -85,12 +87,18 @@ function WeddingApp() {
           messages={guestbook}
           onAddMessage={(msg: GuestbookMessage) => addGuestbook(msg)}
         />
+
+        {/* Section 14: Cadeaux & Soutien financier (M-PESA, Orange Money, Airtel Money) */}
+        <GiftSection />
       </main>
 
       {/* Footer */}
       <Footer onOpenAdmin={() => setIsAdminOpen(true)} />
 
-      {/* Lecteur de Musique Automatique & Flottant */}
+      {/* Bouton WhatsApp de Contact Direct Flottant (en bas à gauche) */}
+      <WhatsAppButton />
+
+      {/* Lecteur de Musique Automatique & Flottant (en bas à droite) */}
       <MusicPlayer />
 
       {/* Administration Modal Interface */}

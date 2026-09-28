@@ -29,6 +29,19 @@ export interface WeddingDetails {
   monogramUrl: string;
   coupleHeroPhoto: string;
   musicUrl?: string; // URL Supabase de la musique de fond (mp3/wav)
+  contactPhone?: string; // Numéro WhatsApp de contact direct (ex: 0823965480)
+}
+
+export type GiftProvider = 'mpesa' | 'orange' | 'airtel' | 'autre';
+
+export interface GiftPayment {
+  id: string;
+  provider: GiftProvider;
+  label: string;
+  phone: string;
+  recipientName: string;
+  description?: string;
+  isActive: boolean;
 }
 
 export interface RSVPData {

@@ -55,6 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAdmin }) => {
     { label: 'Galerie', href: '#galerie' },
     { label: 'RSVP', href: '#rsvp' },
     { label: "Livre d'or", href: '#livredor' },
+    { label: 'Cadeaux', href: '#cadeaux' },
   ];
 
   return (

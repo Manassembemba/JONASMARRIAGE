@@ -41,10 +41,12 @@ import {
   Upload,
   Camera,
   Image as ImageIcon,
+  Gift,
 } from 'lucide-react';
 import { SensitiveDataLock } from './SensitiveDataLock';
 import { InvitationCardModal } from './InvitationCardModal';
 import { AdminPhotosManager } from './AdminPhotosManager';
+import { AdminGiftManager } from './AdminGiftManager';
 import { uploadPhotoToServer } from '../utils/imageUpload';
 import {
   downloadInvitationPdf,
@@ -96,6 +98,8 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     updateVenues,
     updateStoryMilestones,
     updateGalleryItems,
+    giftPayments,
+    updateGiftPayments,
     addRsvp,
     updateRsvp,
     deleteRsvp,
@@ -104,7 +108,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     resetToDefaults,
   } = useWeddingData();
 
-  const [activeTab, setActiveTab] = useState<'guests' | 'dates' | 'venues' | 'presentation' | 'couple' | 'program' | 'photos' | 'guestbook' | 'security' | 'database'>('guests');
+  const [activeTab, setActiveTab] = useState<'guests' | 'dates' | 'venues' | 'presentation' | 'couple' | 'program' | 'photos' | 'gifts' | 'guestbook' | 'security' | 'database'>('guests');
   const [searchQuery, setSearchQuery] = useState('');
   const [presenceFilter, setPresenceFilter] = useState<'all' | 'oui' | 'non'>('all');
   const [saveSuccessMsg, setSaveSuccessMsg] = useState<string | null>(null);
@@ -179,6 +183,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     date2: details.date2 || 'Samedi 31 Octobre 2026',
     targetDateTime: details.targetDateTime || '2026-10-29T11:00:00+01:00',
     cityCountry: details.cityCountry || 'KINSHASA, RDC',
+    contactPhone: details.contactPhone || '0823965480',
   });
 
   // Local state for Venues & Adresses tab
@@ -245,6 +250,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
       date2: details.date2 ?? 'Samedi 31 Octobre 2026',
       targetDateTime: details.targetDateTime ?? '2026-10-29T11:00:00+01:00',
       cityCountry: details.cityCountry ?? 'KINSHASA, RDC',
+      contactPhone: details.contactPhone ?? '0823965480',
     });
     setVenuesForm(venues);
     setPresentationForm({
@@ -814,6 +820,19 @@ export const AdminModal: React.FC<AdminModalProps> = ({
 
           <button
             type="button"
+            onClick={() => setActiveTab('gifts')}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
+              activeTab === 'gifts'
+                ? 'border-[#775a19] text-[#775a19] font-semibold bg-white rounded-t-md shadow-2xs'
+                : 'border-transparent text-[#605e5c] hover:text-[#1b1c1a]'
+            }`}
+          >
+            <Gift className="w-4 h-4" />
+            <span>Cadeaux & Soutien ({giftPayments.length})</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab('guestbook')}
             className={`flex items-center gap-2 px-3 sm:px-4 py-2.5 text-xs sm:text-sm font-medium border-b-2 transition-all whitespace-nowrap ${
               activeTab === 'guestbook'
@@ -1355,6 +1374,22 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                       Cible actuelle : {datesForm.dateFormatted} à {datesForm.targetDateTime.split('T')[1]?.slice(0, 5) || '11:00'}
                     </span>
                   </div>
+                </div>
+
+                <div className="pt-2 border-t border-[#c5a059]/15">
+                  <label className="block text-xs font-semibold text-[#1b1c1a] uppercase tracking-wider mb-1">
+                    Numéro WhatsApp de contact direct des mariés / organisateurs
+                  </label>
+                  <input
+                    type="text"
+                    value={datesForm.contactPhone || ''}
+                    onChange={(e) => setDatesForm({ ...datesForm, contactPhone: e.target.value })}
+                    placeholder="0823965480"
+                    className="w-full px-3 py-2 text-sm font-mono rounded-md border border-[#c5a059]/30 focus:border-[#775a19] focus:outline-hidden bg-white"
+                  />
+                  <span className="text-[10px] text-[#605e5c]">
+                    Ce numéro alimente le bouton WhatsApp fixe flottant et les coordonnées de contact sur le site (format local ex: 0823965480).
+                  </span>
                 </div>
               </div>
             </form>
@@ -2360,6 +2395,16 @@ export const AdminModal: React.FC<AdminModalProps> = ({
               galleryItems={galleryItems}
               onUpdateDetails={updateDetails}
               onUpdateGallery={updateGalleryItems}
+              showNotification={showNotification}
+              openDeleteModal={openDeleteModal}
+            />
+          )}
+
+          {/* TAB: CADEAUX & SOUTIEN */}
+          {activeTab === 'gifts' && (
+            <AdminGiftManager
+              giftPayments={giftPayments}
+              onUpdateGiftPayments={updateGiftPayments}
               showNotification={showNotification}
               openDeleteModal={openDeleteModal}
             />
