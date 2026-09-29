@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import QRCode from 'qrcode';
 import { RSVPData, WeddingDetails, ProgramEvent, VenueData } from '../types';
 import {
   downloadInvitationPdf,
-  formatPhoneForWhatsApp,
-  generateWhatsAppInvitationMessage,
+  shareInvitationPdfViaWhatsApp,
   generateGmailInvitationData,
+  generateWhatsAppInvitationMessage,
 } from '../utils/invitationPdf';
 import {
   X,
@@ -19,6 +20,8 @@ import {
   MapPin,
   ShieldCheck,
   UserCheck,
+  QrCode,
+  Sparkles,
 } from 'lucide-react';
 
 interface InvitationCardModalProps {
@@ -48,31 +51,72 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
   const [guestPhone, setGuestPhone] = useState(guest?.phone || '');
   const [isSavingContact, setIsSavingContact] = useState(false);
   const [saveSuccessMsg, setSaveSuccessMsg] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [isSharingWhatsApp, setIsSharingWhatsApp] = useState(false);
+
+  const passCode = guest
+    ? `PASS-JF2026-${(guest.id || 'INV').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`
+    : '';
+  const seats = guest?.guests_count || 1;
+
+  // Sync state when guest prop changes
+  useEffect(() => {
+    if (guest) {
+      setGuestEmail(guest.email || '');
+      setGuestPhone(guest.phone || '');
+
+      const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mariage-jonas-flora.cd';
+      const qrTargetUrl = `${appUrl}/#pass=${passCode}&guest=${encodeURIComponent(guest.full_name)}&seats=${seats}`;
+      QRCode.toDataURL(qrTargetUrl, {
+        margin: 1,
+        width: 220,
+        color: { dark: '#1b1c1a', light: '#ffffff' },
+      })
+        .then(setQrCodeUrl)
+        .catch(console.error);
+    }
+  }, [guest, passCode, seats]);
 
   if (!isOpen || !guest) return null;
 
-  const passCode = `PASS-JF2026-${(guest.id || 'INV').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
-  const seats = guest.guests_count || 1;
-
   // Téléchargement du PDF officiel
-  const handleDownloadPdf = () => {
-    downloadInvitationPdf(guest, details, programSteps, venues);
+  const handleDownloadPdf = async () => {
+    setIsGeneratingPdf(true);
+    try {
+      await downloadInvitationPdf(
+        { ...guest, phone: guestPhone || guest.phone, email: guestEmail || guest.email },
+        details,
+        programSteps,
+        venues
+      );
+      setSaveSuccessMsg('Billet d\'invitation PDF avec QR Code officiel téléchargé avec succès.');
+      setTimeout(() => setSaveSuccessMsg(''), 4000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
-  // Envoi WhatsApp direct
-  const handleSendWhatsApp = () => {
-    const phoneToUse = guestPhone || guest.phone;
-    const cleanPhone = formatPhoneForWhatsApp(phoneToUse);
-    const message = generateWhatsAppInvitationMessage(
-      { ...guest, phone: phoneToUse, email: guestEmail || guest.email },
-      details
-    );
+  // Envoi WhatsApp avec le PDF en pièce jointe ou via lien direct
+  const handleSendWhatsApp = async () => {
+    setIsSharingWhatsApp(true);
+    try {
+      const guestToUse = { ...guest, phone: guestPhone || guest.phone, email: guestEmail || guest.email };
+      const res = await shareInvitationPdfViaWhatsApp(guestToUse, details, programSteps, venues);
 
-    const waUrl = cleanPhone
-      ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
-      : `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-
-    window.open(waUrl, '_blank');
+      if (res.method === 'native') {
+        setSaveSuccessMsg('Fichier PDF attaché avec succès. Sélectionnez le contact WhatsApp.');
+      } else {
+        setSaveSuccessMsg('Billet PDF généré et téléchargé. Lien direct PDF transmis dans WhatsApp.');
+      }
+      setTimeout(() => setSaveSuccessMsg(''), 5000);
+    } catch (err) {
+      console.error('Erreur partage WhatsApp:', err);
+    } finally {
+      setIsSharingWhatsApp(false);
+    }
   };
 
   // Envoi Gmail direct
@@ -83,10 +127,8 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
       details
     );
 
-    // Ouvre Gmail dans un nouvel onglet
     const newWindow = window.open(gmailUrl, '_blank');
     if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-      // Fallback si popup bloquée : mailto
       window.location.href = mailtoUrl;
     }
   };
@@ -102,7 +144,6 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     } catch {
-      // Fallback
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     }
@@ -128,6 +169,10 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
     }
   };
 
+  const groomName = details.groom?.fullName || 'Madikani Mbidi Jonas';
+  const brideName = details.bride?.fullName || 'Matelo Sanga Flora';
+  const contactPhone = details.contactPhone || '0823965480';
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
       <div className="relative w-full max-w-2xl bg-[#fbf9f5] rounded-2xl shadow-2xl border border-[#c5a059]/40 overflow-hidden my-6 animate-in fade-in zoom-in-95 duration-200">
@@ -142,14 +187,14 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
                 Billet d'Invitation & Pass Officiel
               </h3>
               <p className="text-[11px] text-[#e0ded8]">
-                Création automatique PDF et expédition WhatsApp / Gmail
+                Format PDF haute résolution avec QR Code & Partage direct WhatsApp
               </p>
             </div>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -159,16 +204,16 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
         <div className="p-5 sm:p-7 space-y-6 max-h-[80vh] overflow-y-auto">
           {/* Notification toast */}
           {saveSuccessMsg && (
-            <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-emerald-900 text-xs flex items-center gap-2 shadow-xs animate-fadeIn">
               <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>{saveSuccessMsg}</span>
+              <span className="font-medium">{saveSuccessMsg}</span>
             </div>
           )}
 
           {/* APERÇU LUXUEUX DU BILLET D'INVITATION */}
-          <div className="relative bg-white rounded-xl p-6 sm:p-8 border-2 border-[#c5a059] shadow-lg shadow-[#c5a059]/5 text-center overflow-hidden">
+          <div className="relative bg-white rounded-2xl p-6 sm:p-8 border-2 border-[#c5a059] shadow-xl text-center overflow-hidden">
             {/* Double liseré décoratif intérieur */}
-            <div className="absolute inset-2 border border-[#c5a059]/30 rounded-lg pointer-events-none" />
+            <div className="absolute inset-2 border border-[#c5a059]/30 rounded-xl pointer-events-none" />
 
             {/* En-tête officiel République */}
             <div className="mb-4">
@@ -185,50 +230,70 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               </div>
             </div>
 
-            {/* Noms des Mariés */}
+            {/* Noms des Mariés (100% dynamiques) */}
             <div className="my-4">
               <p className="font-editorial text-xs italic text-[#605e5c] mb-1">
                 Sous la bénédiction de Dieu et l'accord des deux familles
               </p>
               <h3 className="font-editorial text-xl sm:text-2xl font-bold text-[#775a19] leading-tight tracking-wide">
-                Madikani Mbidi Jonas
+                {groomName}
               </h3>
               <p className="font-editorial text-base italic text-[#c5a059] my-0.5">&</p>
               <h3 className="font-editorial text-xl sm:text-2xl font-bold text-[#775a19] leading-tight tracking-wide">
-                Matelo Sanga Flora
+                {brideName}
               </h3>
               <p className="font-editorial text-xs italic text-[#4e4639] mt-2">
                 Ont l'immense honneur de convier à la célébration de leur union sacrée :
               </p>
             </div>
 
-            {/* Cartouche Invité Privilégié */}
-            <div className="my-5 p-4 rounded-lg bg-[#fbf9f5] border border-[#c5a059]/50 shadow-2xs inline-block w-full max-w-lg mx-auto text-center">
-              <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#775a19] block mb-1">
-                INVITÉ(E) D'HONNEUR
-              </span>
-              <div className="font-editorial text-xl sm:text-2xl font-bold text-[#1b1c1a] tracking-wide">
-                {guest.full_name}
-              </div>
-              <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-semibold text-[#775a19] mt-1.5">
-                <span className="px-2.5 py-0.5 rounded-full bg-white border border-[#c5a059]/30">
-                  {seats} place(s) réservée(s)
+            {/* Cartouche Invité Privilégié avec QR Code */}
+            <div className="my-5 p-4 sm:p-5 rounded-xl bg-[#fbf9f5] border border-[#c5a059]/50 shadow-2xs w-full max-w-lg mx-auto text-left flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#775a19] block mb-1">
+                  INVITÉ(E) D'HONNEUR
                 </span>
-                <span className="px-2.5 py-0.5 rounded-full bg-white border border-[#c5a059]/30 font-mono">
-                  {passCode}
+                <div className="font-editorial text-lg sm:text-xl font-bold text-[#1b1c1a] tracking-wide truncate">
+                  {guest.full_name}
+                </div>
+                <div className="flex flex-wrap items-center gap-2 text-xs font-semibold text-[#775a19] mt-2">
+                  <span className="px-2.5 py-0.5 rounded-full bg-white border border-[#c5a059]/30">
+                    {seats} place(s) réservée(s)
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-white border border-[#c5a059]/30 font-mono text-[11px]">
+                    {passCode}
+                  </span>
+                </div>
+                {guest.guest_names && (
+                  <p className="text-xs italic text-[#605e5c] mt-2">
+                    Accompagnateur(s) : <span className="font-medium text-[#1b1c1a]">{guest.guest_names}</span>
+                  </p>
+                )}
+              </div>
+
+              {/* QR Code Scannable */}
+              <div className="flex flex-col items-center shrink-0 p-2 bg-white rounded-lg border border-[#c5a059]/30 shadow-xs">
+                {qrCodeUrl ? (
+                  <img
+                    src={qrCodeUrl}
+                    alt="QR Code Pass"
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-contain"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-stone-100 flex items-center justify-center text-stone-400">
+                    <QrCode className="w-8 h-8" />
+                  </div>
+                )}
+                <span className="text-[9px] font-semibold text-[#775a19] mt-1 tracking-tight">
+                  Pass Officiel
                 </span>
               </div>
-              {guest.guest_names && (
-                <p className="text-xs italic text-[#605e5c] mt-2">
-                  Accompagnateur(s) : <span className="font-medium text-[#1b1c1a]">{guest.guest_names}</span>
-                </p>
-              )}
             </div>
 
             {/* Les 2 Célébrations officielles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 my-4 text-left">
               {/* 1. Mariage Civil */}
-              <div className="p-3.5 rounded-lg bg-white border border-[#c5a059]/30 shadow-2xs">
+              <div className="p-3.5 rounded-xl bg-white border border-[#c5a059]/30 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#775a19] uppercase tracking-wider mb-1">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>1. Mariage Civil</span>
@@ -245,7 +310,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               </div>
 
               {/* 2. Mariage Coutumier */}
-              <div className="p-3.5 rounded-lg bg-white border border-[#c5a059]/30 shadow-2xs">
+              <div className="p-3.5 rounded-xl bg-white border border-[#c5a059]/30 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#775a19] uppercase tracking-wider mb-1">
                   <Calendar className="w-3.5 h-3.5" />
                   <span>2. Mariage Coutumier</span>
@@ -257,14 +322,17 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
                 </div>
                 <div className="flex items-start gap-1 text-[11px] text-[#4e4639] mt-1">
                   <MapPin className="w-3 h-3 text-[#c5a059] shrink-0 mt-0.5" />
-                  <span>Résidence Familiale — N'sele (Av. Bolia n°15, Mpasa 1)</span>
+                  <span>Résidence Familiale — N'sele (Av. Bolia n°15, Arrêt 3 Paillote)</span>
                 </div>
               </div>
             </div>
 
-            {/* Consigne protocolaire */}
-            <div className="pt-2 border-t border-[#c5a059]/20 text-[11px] text-[#605e5c] italic">
-              Billet personnel à présenter à l'accueil • Tenue de ville soignée ou tenue traditionnelle exigée
+            {/* Consigne protocolaire & Contact WhatsApp */}
+            <div className="pt-2 border-t border-[#c5a059]/20 text-[11px] text-[#605e5c] space-y-1">
+              <div>Billet personnel à présenter à l'accueil • Tenue de ville soignée ou tenue traditionnelle exigée</div>
+              <div className="text-[#775a19] font-medium">
+                Orientation & Protocole WhatsApp : <strong>{contactPhone}</strong>
+              </div>
             </div>
           </div>
 
@@ -278,7 +346,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               <button
                 type="button"
                 onClick={() => setIsEditingContact(!isEditingContact)}
-                className="text-xs font-medium text-[#775a19] hover:underline"
+                className="text-xs font-medium text-[#775a19] hover:underline cursor-pointer"
               >
                 {isEditingContact ? 'Fermer' : 'Modifier les coordonnées'}
               </button>
@@ -340,7 +408,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setIsEditingContact(false)}
-                    className="px-3 py-1.5 text-xs rounded-md border border-stone-300 text-stone-600 hover:bg-stone-50"
+                    className="px-3 py-1.5 text-xs rounded-md border border-stone-300 text-stone-600 hover:bg-stone-50 cursor-pointer"
                   >
                     Annuler
                   </button>
@@ -348,7 +416,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
                     type="button"
                     disabled={isSavingContact}
                     onClick={handleSaveContact}
-                    className="px-4 py-1.5 text-xs font-semibold rounded-md bg-[#775a19] text-white hover:bg-[#604812] transition-colors"
+                    className="px-4 py-1.5 text-xs font-semibold rounded-md bg-[#775a19] text-white hover:bg-[#604812] transition-colors cursor-pointer"
                   >
                     {isSavingContact ? 'Enregistrement...' : 'Enregistrer'}
                   </button>
@@ -361,33 +429,41 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
           <div className="space-y-3">
             <h5 className="text-xs font-bold uppercase tracking-wider text-[#1b1c1a] flex items-center gap-1.5">
               <Share2 className="w-4 h-4 text-[#775a19]" />
-              Options d'envoi et de génération automatique
+              Options de partage et téléchargement du Billet PDF
             </h5>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {/* 1. Télécharger PDF */}
               <button
                 type="button"
+                disabled={isGeneratingPdf}
                 onClick={handleDownloadPdf}
-                className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-gradient-to-r from-[#1b1c1a] to-[#3a352c] text-white hover:from-[#775a19] hover:to-[#917025] transition-all shadow-md group"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-gradient-to-r from-[#1b1c1a] to-[#3a352c] text-white hover:from-[#775a19] hover:to-[#917025] disabled:opacity-50 transition-all shadow-md group cursor-pointer"
               >
                 <Download className="w-4 h-4 text-[#ffdea5] group-hover:scale-110 transition-transform" />
                 <div className="text-left">
-                  <span className="block text-xs font-bold">Télécharger PDF</span>
-                  <span className="block text-[10px] text-[#e0ded8]">Billet officiel haute rés.</span>
+                  <span className="block text-xs font-bold">
+                    {isGeneratingPdf ? 'Génération...' : 'Télécharger PDF'}
+                  </span>
+                  <span className="block text-[10px] text-[#e0ded8]">Avec QR Code officiel</span>
                 </div>
               </button>
 
-              {/* 2. Envoyer par WhatsApp */}
+              {/* 2. Envoyer par WhatsApp (vrai partage PDF) */}
               <button
                 type="button"
+                disabled={isSharingWhatsApp}
                 onClick={handleSendWhatsApp}
-                className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-md group"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white transition-all shadow-md group cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
                 <div className="text-left">
-                  <span className="block text-xs font-bold">Envoyer WhatsApp</span>
-                  <span className="block text-[10px] text-emerald-100">Direct vers {guestPhone || guest.phone}</span>
+                  <span className="block text-xs font-bold">
+                    {isSharingWhatsApp ? 'Préparation du PDF...' : 'Partager PDF WhatsApp'}
+                  </span>
+                  <span className="block text-[10px] text-emerald-100">
+                    Billet PDF + pass officiel
+                  </span>
                 </div>
               </button>
 
@@ -395,7 +471,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               <button
                 type="button"
                 onClick={handleSendGmail}
-                className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-md group"
+                className="flex items-center justify-center gap-2 p-3.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white transition-all shadow-md group cursor-pointer"
               >
                 <Mail className="w-4 h-4 text-white group-hover:scale-110 transition-transform" />
                 <div className="text-left">
@@ -407,16 +483,16 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               </button>
             </div>
 
-            {/* Bouton secondaire de copie du texte formaté */}
+            {/* Note informative protocolaire */}
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#605e5c]">
-              <div className="flex items-center gap-1 text-[11px]">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#775a19]" />
-                <span>Billet sécurisé avec signature protocolaire officielle</span>
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <Sparkles className="w-3.5 h-3.5 text-[#c5a059]" />
+                <span>Le PDF joint ou son lien direct contient le QR Code certifié pour le contrôle à l'accueil.</span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyText}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#eae8e4] hover:bg-[#d1c5b4] text-[#1b1c1a] font-medium transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#eae8e4] hover:bg-[#d1c5b4] text-[#1b1c1a] font-medium transition-colors cursor-pointer"
               >
                 {copied ? (
                   <>

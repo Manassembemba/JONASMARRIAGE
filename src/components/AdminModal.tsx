@@ -50,6 +50,7 @@ import { AdminGiftManager } from './AdminGiftManager';
 import { uploadPhotoToServer } from '../utils/imageUpload';
 import {
   downloadInvitationPdf,
+  shareInvitationPdfViaWhatsApp,
   formatPhoneForWhatsApp,
   generateWhatsAppInvitationMessage,
   generateGmailInvitationData,
@@ -160,7 +161,7 @@ export const AdminModal: React.FC<AdminModalProps> = ({
     }
     showNotification(`Téléchargement de ${confirmed.length} billet(s) d'invitation PDF en cours...`);
     for (let i = 0; i < confirmed.length; i++) {
-      downloadInvitationPdf(confirmed[i], details, programSteps, venues);
+      await downloadInvitationPdf(confirmed[i], details, programSteps, venues);
       if (i < confirmed.length - 1) {
         await new Promise((resolve) => setTimeout(resolve, 350));
       }
@@ -1124,61 +1125,50 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                             </td>
                             <td className="py-3 px-4 text-right">
                               <div className="flex items-center justify-end gap-1.5">
-                                {/* BOUTONS INVITATION PDF, WHATSAPP & GMAIL (SI CONFIRMÉ) */}
-                                {guest.attendance === 'oui' && (
-                                  <>
-                                    {/* 1. Billet & Pass PDF */}
-                                    <button
-                                      type="button"
-                                      onClick={() => setInvitationGuest(guest)}
-                                      className="p-1 rounded text-[#775a19] bg-[#c5a059]/15 hover:bg-[#775a19] hover:text-white transition-colors border border-[#c5a059]/30"
-                                      title="Créer / Télécharger le Billet d'Invitation PDF"
-                                    >
-                                      <FileText className="w-3.5 h-3.5" />
-                                    </button>
+                                {/* BOUTONS INVITATION PDF, WHATSAPP & GMAIL */}
+                                <button
+                                  type="button"
+                                  onClick={() => setInvitationGuest(guest)}
+                                  className="p-1 rounded text-[#775a19] bg-[#c5a059]/15 hover:bg-[#775a19] hover:text-white transition-colors border border-[#c5a059]/30"
+                                  title="Billet d'Invitation & Pass PDF (avec QR Code & Partage)"
+                                >
+                                  <FileText className="w-3.5 h-3.5" />
+                                </button>
 
-                                    {/* 2. Envoi WhatsApp */}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        const cleanPhone = formatPhoneForWhatsApp(guest.phone);
-                                        const msg = generateWhatsAppInvitationMessage(guest, details);
-                                        const waUrl = cleanPhone
-                                          ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`
-                                          : `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
-                                        window.open(waUrl, '_blank');
-                                      }}
-                                      className="p-1 rounded text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300"
-                                      title={`Envoyer l'invitation sur WhatsApp (${guest.phone})`}
-                                    >
-                                      <MessageCircle className="w-3.5 h-3.5" />
-                                    </button>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    showNotification(`Génération du billet PDF pour ${guest.full_name}...`);
+                                    await shareInvitationPdfViaWhatsApp(guest, details, programSteps, venues);
+                                  }}
+                                  className="p-1 rounded text-emerald-700 bg-emerald-50 hover:bg-emerald-600 hover:text-white transition-colors border border-emerald-300"
+                                  title={`Partager le Billet PDF sur WhatsApp (${guest.phone})`}
+                                >
+                                  <MessageCircle className="w-3.5 h-3.5" />
+                                </button>
 
-                                    {/* 3. Envoi Gmail */}
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        if (!guest.email) {
-                                          setInvitationGuest(guest);
-                                        } else {
-                                          const { gmailUrl, mailtoUrl } = generateGmailInvitationData(guest, details);
-                                          const w = window.open(gmailUrl, '_blank');
-                                          if (!w || w.closed || typeof w.closed === 'undefined') {
-                                            window.location.href = mailtoUrl;
-                                          }
-                                        }
-                                      }}
-                                      className="p-1 rounded text-rose-700 bg-rose-50 hover:bg-rose-600 hover:text-white transition-colors border border-rose-300"
-                                      title={
-                                        guest.email
-                                          ? `Envoyer l'invitation par Gmail (${guest.email})`
-                                          : "Renseigner l'adresse Gmail et envoyer l'invitation"
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!guest.email) {
+                                      setInvitationGuest(guest);
+                                    } else {
+                                      const { gmailUrl, mailtoUrl } = generateGmailInvitationData(guest, details);
+                                      const w = window.open(gmailUrl, '_blank');
+                                      if (!w || w.closed || typeof w.closed === 'undefined') {
+                                        window.location.href = mailtoUrl;
                                       }
-                                    >
-                                      <Mail className="w-3.5 h-3.5" />
-                                    </button>
-                                  </>
-                                )}
+                                    }
+                                  }}
+                                  className="p-1 rounded text-rose-700 bg-rose-50 hover:bg-rose-600 hover:text-white transition-colors border border-rose-300"
+                                  title={
+                                    guest.email
+                                      ? `Envoyer l'invitation par Gmail (${guest.email})`
+                                      : "Renseigner l'adresse Gmail et envoyer l'invitation"
+                                  }
+                                >
+                                  <Mail className="w-3.5 h-3.5" />
+                                </button>
 
                                 <button
                                   type="button"
