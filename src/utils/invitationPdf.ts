@@ -20,56 +20,56 @@ export function getCeremonyVenues(
   venues?: VenueData[],
   programSteps?: ProgramEvent[]
 ): { civil: ExtractedCeremony; coutumier: ExtractedCeremony } {
-  // 1. Cérémonie Civile
-  const foundCivilVenue = venues?.find(
-    (v) =>
+  // 1. Cérémonie Civile — priorité sur l'id 'lemba', puis keyword matching
+  const foundCivilVenue = venues?.find((v) => v.id === 'lemba') ||
+    venues?.find((v) =>
       v.ceremony?.toLowerCase().includes('civil') ||
-      v.name?.toLowerCase().includes('lemba') ||
-      v.badge?.toLowerCase().includes('1')
-  );
+      v.name?.toLowerCase().includes('lemba')
+    );
   const foundCivilStep = programSteps?.find(
     (s) =>
       s.title?.toLowerCase().includes('civil') ||
-      s.type?.toLowerCase().includes('civil') ||
-      s.badge?.toLowerCase().includes('1')
+      s.type?.toLowerCase().includes('civil')
   );
 
   const civil: ExtractedCeremony = {
     name: foundCivilVenue?.name || foundCivilStep?.location || 'Maison Communale de Lemba',
-    ceremony: foundCivilVenue?.ceremony || 'Mariage Civil',
+    ceremony: 'Mariage Civil', // Hardcodé — toujours correct, évite la duplication
     date: details.date1 || foundCivilVenue?.date || 'Jeudi 29 Octobre 2026',
     time: foundCivilVenue?.time || foundCivilStep?.time || '11h00 (Accueil dès 10h30)',
     address:
       foundCivilVenue?.address ||
       foundCivilStep?.address ||
-      'Avenue Kadjeke n° 1 Bis, Quartier Commercial, Lemba, Kinshasa',
+      'Avenue Kadjeke n° 1 Bis, Quartier Commercial, Commune de Lemba, Kinshasa',
     landmarks: foundCivilVenue?.landmarks || foundCivilStep?.landmarks || 'Parking réservé sur place',
   };
 
-  // 2. Cérémonie Coutumière & Réception
-  const foundCoutumierVenue = venues?.find(
-    (v) =>
+  // 2. Cérémonie Coutumière — priorité sur l'id 'nsele', puis keyword matching
+  const foundCoutumierVenue = venues?.find((v) => v.id === 'nsele') ||
+    venues?.find((v) =>
       v.ceremony?.toLowerCase().includes('coutumier') ||
-      v.name?.toLowerCase().includes('n\'sele') ||
-      v.badge?.toLowerCase().includes('2')
-  );
+      v.name?.toLowerCase().includes("n'sele") ||
+      v.name?.toLowerCase().includes('nsele')
+    );
   const foundCoutumierStep = programSteps?.find(
     (s) =>
       s.title?.toLowerCase().includes('coutumier') ||
-      s.type?.toLowerCase().includes('coutumier') ||
-      s.badge?.toLowerCase().includes('2')
+      s.type?.toLowerCase().includes('coutumier')
   );
 
   const coutumier: ExtractedCeremony = {
-    name: foundCoutumierVenue?.name || foundCoutumierStep?.location || 'Résidence Familiale — N\'sele',
-    ceremony: foundCoutumierVenue?.ceremony || 'Mariage Coutumier & Réception',
+    name: foundCoutumierVenue?.name || foundCoutumierStep?.location || "Résidence Familiale — N'sele",
+    ceremony: 'Mariage Coutumier & Réception', // Hardcodé — toujours correct, évite la duplication
     date: details.date2 || foundCoutumierVenue?.date || 'Samedi 31 Octobre 2026',
     time: foundCoutumierVenue?.time || foundCoutumierStep?.time || '15h00 — 19h45',
     address:
       foundCoutumierVenue?.address ||
       foundCoutumierStep?.address ||
-      'Avenue Bolia n°15, Quartier Mpasa 1, Commune de la N\'sele, Kinshasa',
-    landmarks: foundCoutumierVenue?.landmarks || foundCoutumierStep?.landmarks || 'Arrêt : 3 Paillote • Référence : KIN MARCHE',
+      "Avenue Bolia n°15, Quartier Mpasa 1, Commune de la N'sele, Kinshasa",
+    landmarks:
+      foundCoutumierVenue?.landmarks ||
+      foundCoutumierStep?.landmarks ||
+      'Arrêt : 3 Paillote • Référence : KIN MARCHE',
   };
 
   return { civil, coutumier };
