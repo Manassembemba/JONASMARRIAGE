@@ -6,6 +6,7 @@ import {
   shareInvitationPdfViaWhatsApp,
   generateGmailInvitationData,
   generateWhatsAppInvitationMessage,
+  getCeremonyVenues,
 } from '../utils/invitationPdf';
 import {
   X,
@@ -124,7 +125,10 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
     const emailToUse = guestEmail || guest.email || '';
     const { gmailUrl, mailtoUrl } = generateGmailInvitationData(
       { ...guest, email: emailToUse },
-      details
+      details,
+      undefined,
+      venues,
+      programSteps
     );
 
     const newWindow = window.open(gmailUrl, '_blank');
@@ -137,7 +141,10 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
   const handleCopyText = async () => {
     const message = generateWhatsAppInvitationMessage(
       { ...guest, phone: guestPhone || guest.phone, email: guestEmail || guest.email },
-      details
+      details,
+      undefined,
+      venues,
+      programSteps
     );
     try {
       await navigator.clipboard.writeText(message);
@@ -172,6 +179,7 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
   const groomName = details.groom?.fullName || 'Madikani Mbidi Jonas';
   const brideName = details.bride?.fullName || 'Matelo Sanga Flora';
   const contactPhone = details.contactPhone || '0823965480';
+  const { civil, coutumier } = getCeremonyVenues(details, venues, programSteps);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
@@ -296,16 +304,16 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               <div className="p-3.5 rounded-xl bg-white border border-[#c5a059]/30 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#775a19] uppercase tracking-wider mb-1">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>1. Mariage Civil</span>
+                  <span>1. {civil.ceremony}</span>
                 </div>
-                <div className="text-xs font-bold text-[#1b1c1a]">{details.date1 || 'Jeudi 29 Octobre 2026'}</div>
+                <div className="text-xs font-bold text-[#1b1c1a]">{civil.date}</div>
                 <div className="flex items-center gap-1 text-[11px] text-[#775a19] font-medium my-0.5">
                   <Clock className="w-3 h-3" />
-                  <span>11h00 (Accueil dès 10h30)</span>
+                  <span>{civil.time}</span>
                 </div>
                 <div className="flex items-start gap-1 text-[11px] text-[#4e4639] mt-1">
                   <MapPin className="w-3 h-3 text-[#c5a059] shrink-0 mt-0.5" />
-                  <span>Maison Communale de Lemba (Av. Kadjeke n° 1 Bis)</span>
+                  <span>{civil.name} ({civil.address})</span>
                 </div>
               </div>
 
@@ -313,16 +321,16 @@ export const InvitationCardModal: React.FC<InvitationCardModalProps> = ({
               <div className="p-3.5 rounded-xl bg-white border border-[#c5a059]/30 shadow-2xs">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#775a19] uppercase tracking-wider mb-1">
                   <Calendar className="w-3.5 h-3.5" />
-                  <span>2. Mariage Coutumier</span>
+                  <span>2. {coutumier.ceremony}</span>
                 </div>
-                <div className="text-xs font-bold text-[#1b1c1a]">{details.date2 || 'Samedi 31 Octobre 2026'}</div>
+                <div className="text-xs font-bold text-[#1b1c1a]">{coutumier.date}</div>
                 <div className="flex items-center gap-1 text-[11px] text-[#775a19] font-medium my-0.5">
                   <Clock className="w-3 h-3" />
-                  <span>15h00 — 19h45</span>
+                  <span>{coutumier.time}</span>
                 </div>
                 <div className="flex items-start gap-1 text-[11px] text-[#4e4639] mt-1">
                   <MapPin className="w-3 h-3 text-[#c5a059] shrink-0 mt-0.5" />
-                  <span>Résidence Familiale — N'sele (Av. Bolia n°15, Arrêt 3 Paillote)</span>
+                  <span>{coutumier.name} ({coutumier.address}{coutumier.landmarks ? ` • ${coutumier.landmarks}` : ''})</span>
                 </div>
               </div>
             </div>

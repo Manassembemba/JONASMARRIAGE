@@ -2,11 +2,7 @@ import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { RSVPData } from '../types';
 import { useWeddingData } from '../context/WeddingDataContext';
-import {
-  downloadInvitationPdf,
-  formatPhoneForWhatsApp,
-  generateWhatsAppInvitationMessage,
-} from '../utils/invitationPdf';
+import { downloadInvitationPdf } from '../utils/invitationPdf';
 import {
   Heart,
   Check,
@@ -357,6 +353,19 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({ onRsvpSubmitted }) => 
                       <p className="italic bg-white p-2.5 rounded border border-[#eae8e4]">
                         « {submittedData.message} »
                       </p>
+                    </div>
+                  )}
+
+                  {submittedData.attendance === 'oui' && (
+                    <div className="pt-3 border-t border-[#eae8e4]">
+                      <button
+                        type="button"
+                        onClick={() => downloadInvitationPdf(submittedData, details, programSteps, venues)}
+                        className="w-full py-2.5 px-4 bg-[#775a19] hover:bg-[#5f4714] text-white rounded-lg text-xs font-bold tracking-wider uppercase transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+                      >
+                        <Download className="w-3.5 h-3.5 text-[#ffdea5]" />
+                        <span>Télécharger mon Billet & Pass PDF</span>
+                      </button>
                     </div>
                   )}
                 </div>

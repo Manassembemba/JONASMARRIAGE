@@ -1153,7 +1153,13 @@ export const AdminModal: React.FC<AdminModalProps> = ({
                                     if (!guest.email) {
                                       setInvitationGuest(guest);
                                     } else {
-                                      const { gmailUrl, mailtoUrl } = generateGmailInvitationData(guest, details);
+                                      const { gmailUrl, mailtoUrl } = generateGmailInvitationData(
+                                        guest,
+                                        details,
+                                        undefined,
+                                        venues,
+                                        programSteps
+                                      );
                                       const w = window.open(gmailUrl, '_blank');
                                       if (!w || w.closed || typeof w.closed === 'undefined') {
                                         window.location.href = mailtoUrl;

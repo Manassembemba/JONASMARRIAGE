@@ -3,6 +3,78 @@ import QRCode from 'qrcode';
 import { RSVPData, WeddingDetails, ProgramEvent, VenueData } from '../types';
 import { supabase } from '../lib/supabase';
 
+export interface ExtractedCeremony {
+  name: string;
+  ceremony: string;
+  date: string;
+  time: string;
+  address: string;
+  landmarks?: string;
+}
+
+/**
+ * Extrait les informations dynamiques et fiables des 2 cérémonies depuis la base de données (venues & programSteps)
+ */
+export function getCeremonyVenues(
+  details: WeddingDetails,
+  venues?: VenueData[],
+  programSteps?: ProgramEvent[]
+): { civil: ExtractedCeremony; coutumier: ExtractedCeremony } {
+  // 1. Cérémonie Civile
+  const foundCivilVenue = venues?.find(
+    (v) =>
+      v.ceremony?.toLowerCase().includes('civil') ||
+      v.name?.toLowerCase().includes('lemba') ||
+      v.badge?.toLowerCase().includes('1')
+  );
+  const foundCivilStep = programSteps?.find(
+    (s) =>
+      s.title?.toLowerCase().includes('civil') ||
+      s.type?.toLowerCase().includes('civil') ||
+      s.badge?.toLowerCase().includes('1')
+  );
+
+  const civil: ExtractedCeremony = {
+    name: foundCivilVenue?.name || foundCivilStep?.location || 'Maison Communale de Lemba',
+    ceremony: foundCivilVenue?.ceremony || 'Mariage Civil',
+    date: details.date1 || foundCivilVenue?.date || 'Jeudi 29 Octobre 2026',
+    time: foundCivilVenue?.time || foundCivilStep?.time || '11h00 (Accueil dès 10h30)',
+    address:
+      foundCivilVenue?.address ||
+      foundCivilStep?.address ||
+      'Avenue Kadjeke n° 1 Bis, Quartier Commercial, Lemba, Kinshasa',
+    landmarks: foundCivilVenue?.landmarks || foundCivilStep?.landmarks || 'Parking réservé sur place',
+  };
+
+  // 2. Cérémonie Coutumière & Réception
+  const foundCoutumierVenue = venues?.find(
+    (v) =>
+      v.ceremony?.toLowerCase().includes('coutumier') ||
+      v.name?.toLowerCase().includes('n\'sele') ||
+      v.badge?.toLowerCase().includes('2')
+  );
+  const foundCoutumierStep = programSteps?.find(
+    (s) =>
+      s.title?.toLowerCase().includes('coutumier') ||
+      s.type?.toLowerCase().includes('coutumier') ||
+      s.badge?.toLowerCase().includes('2')
+  );
+
+  const coutumier: ExtractedCeremony = {
+    name: foundCoutumierVenue?.name || foundCoutumierStep?.location || 'Résidence Familiale — N\'sele',
+    ceremony: foundCoutumierVenue?.ceremony || 'Mariage Coutumier & Réception',
+    date: details.date2 || foundCoutumierVenue?.date || 'Samedi 31 Octobre 2026',
+    time: foundCoutumierVenue?.time || foundCoutumierStep?.time || '15h00 — 19h45',
+    address:
+      foundCoutumierVenue?.address ||
+      foundCoutumierStep?.address ||
+      'Avenue Bolia n°15, Quartier Mpasa 1, Commune de la N\'sele, Kinshasa',
+    landmarks: foundCoutumierVenue?.landmarks || foundCoutumierStep?.landmarks || 'Arrêt : 3 Paillote • Référence : KIN MARCHE',
+  };
+
+  return { civil, coutumier };
+}
+
 /**
  * Normalise un numéro de téléphone pour WhatsApp (ex: +243 81 234 5678 -> 243812345678)
  */
@@ -19,12 +91,14 @@ export function formatPhoneForWhatsApp(phone: string): string {
 }
 
 /**
- * Génère le texte officiel d'invitation pour WhatsApp
+ * Génère le texte officiel d'invitation pour WhatsApp, 100% synchronisé avec les données de la base
  */
 export function generateWhatsAppInvitationMessage(
   guest: RSVPData,
   details: WeddingDetails,
-  pdfPublicUrl?: string
+  pdfPublicUrl?: string,
+  venues?: VenueData[],
+  programSteps?: ProgramEvent[]
 ): string {
   const passCode = `PASS-JF2026-${(guest.id || 'INV').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
   const seats = guest.guests_count || 1;
@@ -33,6 +107,8 @@ export function generateWhatsAppInvitationMessage(
   const groomName = (details.groom?.fullName || 'Madikani Mbidi Jonas').toUpperCase();
   const brideName = (details.bride?.fullName || 'Matelo Sanga Flora').toUpperCase();
   const contactPhone = details.contactPhone || '0823965480';
+
+  const { civil, coutumier } = getCeremonyVenues(details, venues, programSteps);
 
   let msg = `*INVITATION OFFICIELLE & BILLET D'HONNEUR NUPTIAL*
 *MARIAGE ${groomName} & ${brideName}*
@@ -49,15 +125,17 @@ C'est avec un immense honneur et une profonde joie que nous vous prions de bien 
 
 *PROGRAMME OFFICIEL DES CÉLÉBRATIONS :*
 
-1. *MARIAGE CIVIL*
-• Date : *${details.date1 || 'Jeudi 29 Octobre 2026'}*
-• Heure : *11H00* (Accueil dès 10h30)
-• Lieu : *Maison Communale de Lemba* (Av. Kadjeke n° 1 Bis, Kinshasa)
+1. *${civil.ceremony.toUpperCase()}*
+• Date : *${civil.date}*
+• Heure : *${civil.time}*
+• Lieu : *${civil.name}*
+• Adresse : ${civil.address}${civil.landmarks ? `\n• Repères : ${civil.landmarks}` : ''}
 
-2. *MARIAGE COUTUMIER & RÉCEPTION*
-• Date : *${details.date2 || 'Samedi 31 Octobre 2026'}*
-• Heure : *15H00 à 19H45*
-• Lieu : *Résidence Familiale — N'sele* (Av. Bolia n°15, Arrêt 3 Paillote, KIN MARCHE)
+2. *${coutumier.ceremony.toUpperCase()}*
+• Date : *${coutumier.date}*
+• Heure : *${coutumier.time}*
+• Lieu : *${coutumier.name}*
+• Adresse : ${coutumier.address}${coutumier.landmarks ? `\n• Repères : ${coutumier.landmarks}` : ''}
 
 • Dress code : *Tenue de ville soignée ou tenue traditionnelle d'apparat.*
 • Assistance protocolaire : *WhatsApp ${contactPhone}*`;
@@ -75,12 +153,14 @@ Avec toute notre gratitude et notre considération,
 }
 
 /**
- * Génère le sujet et le corps de message pour l'envoi Gmail
+ * Génère le sujet et le corps de message pour l'envoi Gmail, 100% synchronisé avec la base
  */
 export function generateGmailInvitationData(
   guest: RSVPData,
   details: WeddingDetails,
-  pdfPublicUrl?: string
+  pdfPublicUrl?: string,
+  venues?: VenueData[],
+  programSteps?: ProgramEvent[]
 ): { subject: string; body: string; gmailUrl: string; mailtoUrl: string } {
   const passCode = `PASS-JF2026-${(guest.id || 'INV').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
   const seats = guest.guests_count || 1;
@@ -88,6 +168,9 @@ export function generateGmailInvitationData(
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mariage-jonas-flora.cd';
   const groomName = (details.groom?.fullName || 'Madikani Mbidi Jonas').toUpperCase();
   const brideName = (details.bride?.fullName || 'Matelo Sanga Flora').toUpperCase();
+  const contactPhone = details.contactPhone || '0823965480';
+
+  const { civil, coutumier } = getCeremonyVenues(details, venues, programSteps);
 
   const subject = `Invitation Officielle & Pass d'Accès — Mariage ${details.groom?.shortName || 'Jonas'} & ${details.bride?.shortName || 'Flora'} (Kinshasa)`;
 
@@ -107,20 +190,20 @@ DÉTAILS DE VOTRE INVITATION :
 
 PROGRAMME OFFICIEL DES CÉLÉBRATIONS :
 --------------------------------------------------
-1. MARIAGE CIVIL
-• Date : ${details.date1 || 'Jeudi 29 Octobre 2026'}
-• Horaires : 11h00 précises (Accueil des invités dès 10h30)
-• Lieu : Maison Communale de Lemba
-• Adresse : Avenue Kadjeke n° 1 Bis, Quartier Commercial, Lemba, Kinshasa
+1. ${civil.ceremony.toUpperCase()}
+• Date : ${civil.date}
+• Horaires : ${civil.time}
+• Lieu : ${civil.name}
+• Adresse : ${civil.address}${civil.landmarks ? `\n• Repères : ${civil.landmarks}` : ''}
 
-2. MARIAGE COUTUMIER & RÉCEPTION
-• Date : ${details.date2 || 'Samedi 31 Octobre 2026'}
-• Horaires : 15h00 — 19h45
-• Lieu : Résidence Familiale — N'sele
-• Adresse : Avenue Bolia n°15, Quartier Mpasa 1, Commune de la N'sele, Kinshasa
-• Repères : Arrêt 3 Paillote • Référence KIN MARCHE
+2. ${coutumier.ceremony.toUpperCase()}
+• Date : ${coutumier.date}
+• Horaires : ${coutumier.time}
+• Lieu : ${coutumier.name}
+• Adresse : ${coutumier.address}${coutumier.landmarks ? `\n• Repères : ${coutumier.landmarks}` : ''}
 
 Code vestimentaire recommandé : Tenue de ville soignée ou tenue traditionnelle de fête.
+Assistance & Orientation Protocolaire WhatsApp : ${contactPhone}
 Prière de vous munir de votre Pass ou de cette confirmation lors de votre accueil.`;
 
   if (pdfPublicUrl) {
@@ -147,7 +230,7 @@ ${details.groom?.fullName || 'Madikani Mbidi Jonas'} & ${details.bride?.fullName
 }
 
 /**
- * Génère le PDF d'invitation officiel au format A4 haute résolution avec QR Code
+ * Génère le PDF d'invitation officiel au format A4 haute résolution avec QR Code et données 100% dynamiques
  */
 export async function generateInvitationPdf(
   guest: RSVPData,
@@ -166,6 +249,8 @@ export async function generateInvitationPdf(
   const passCode = `PASS-JF2026-${(guest.id || 'INV').replace(/[^a-zA-Z0-9]/g, '').slice(-6).toUpperCase()}`;
   const seats = guest.guests_count || 1;
   const appUrl = typeof window !== 'undefined' ? window.location.origin : 'https://mariage-jonas-flora.cd';
+
+  const { civil, coutumier } = getCeremonyVenues(details, venues, programSteps);
 
   // 1. Fond crème ivoire
   doc.setFillColor(252, 250, 246);
@@ -222,7 +307,7 @@ export async function generateInvitationPdf(
   doc.setFillColor(197, 160, 89);
   doc.rect(103, currentY - 1.5, 4, 3, 'F');
 
-  // 6. Noms des Mariés (100% dynamiques)
+  // 6. Noms des Mariés (100% dynamiques depuis Supabase)
   currentY += 12;
   doc.setFont('times', 'italic');
   doc.setFontSize(10.5);
@@ -271,7 +356,7 @@ export async function generateInvitationPdf(
   doc.setLineWidth(0.8);
   doc.roundedRect(cardBoxX, currentY, cardBoxW, cardBoxH, 3, 3, 'S');
 
-  // Génération du QR Code officiel
+  // Génération du QR Code officiel scannable
   try {
     const qrTargetUrl = `${appUrl}/#pass=${passCode}&guest=${encodeURIComponent(guest.full_name)}&seats=${seats}`;
     const qrDataUrl = await QRCode.toDataURL(qrTargetUrl, {
@@ -326,24 +411,11 @@ export async function generateInvitationPdf(
 
   currentY += 5;
 
-  // 9. Deux Encadrés Cérémonies (Civil & Coutumier)
+  // 9. Deux Encadrés Cérémonies (Civil & Coutumier) — 100% synchronisés avec la base
   const ceremonyBoxW = (pageWidth - 48) / 2;
   const ceremonyBoxH = 68;
   const col1X = 20;
   const col2X = 20 + ceremonyBoxW + 8;
-
-  // Trouver les détails dynamiques de Lemba & N'sele
-  const civilVenue = venues?.find(v => v.ceremony?.toLowerCase().includes('civil') || v.name?.toLowerCase().includes('lemba')) || {
-    address: 'Avenue Kadjeke n° 1 Bis\nQuartier Commercial, Lemba\nKinshasa • Parking réservé',
-    name: 'Maison Communale de Lemba',
-    time: '11h00 (Accueil dès 10h30)',
-  };
-
-  const coutumierVenue = venues?.find(v => v.ceremony?.toLowerCase().includes('coutumier') || v.name?.toLowerCase().includes('n\'sele')) || {
-    address: 'Avenue Bolia n°15\nQuartier Mpasa 1, N\'sele\nArrêt 3 Paillote • Réf. KIN MARCHE',
-    name: 'Résidence Familiale — N\'sele',
-    time: '15h00 — 19h45',
-  };
 
   // Box 1: Mariage Civil
   doc.setFillColor(255, 255, 255);
@@ -357,27 +429,28 @@ export async function generateInvitationPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(119, 90, 25);
-  doc.text('1. MARIAGE CIVIL', col1X + ceremonyBoxW / 2, currentY + 6, { align: 'center' });
+  doc.text(`1. ${civil.ceremony.toUpperCase()}`, col1X + ceremonyBoxW / 2, currentY + 6, { align: 'center' });
 
   doc.setFont('times', 'bold');
   doc.setFontSize(10.5);
   doc.setTextColor(27, 28, 26);
-  doc.text(details.date1 || 'Jeudi 29 Octobre 2026', col1X + ceremonyBoxW / 2, currentY + 16.5, { align: 'center' });
+  doc.text(civil.date, col1X + ceremonyBoxW / 2, currentY + 16.5, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(119, 90, 25);
-  doc.text(civilVenue.time || '11H00 (Accueil dès 10h30)', col1X + ceremonyBoxW / 2, currentY + 22, { align: 'center' });
+  doc.text(civil.time, col1X + ceremonyBoxW / 2, currentY + 22, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(27, 28, 26);
-  doc.text(civilVenue.name || 'Maison Communale de Lemba', col1X + ceremonyBoxW / 2, currentY + 29.5, { align: 'center' });
+  doc.text(civil.name, col1X + ceremonyBoxW / 2, currentY + 29.5, { align: 'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(78, 70, 57);
-  const civilAddr = doc.splitTextToSize(civilVenue.address || 'Lemba, Kinshasa', ceremonyBoxW - 6);
+  const civilAddrText = civil.address + (civil.landmarks ? `\n${civil.landmarks}` : '');
+  const civilAddr = doc.splitTextToSize(civilAddrText, ceremonyBoxW - 6);
   doc.text(civilAddr, col1X + ceremonyBoxW / 2, currentY + 36, { align: 'center' });
 
   doc.setFont('times', 'italic');
@@ -397,27 +470,28 @@ export async function generateInvitationPdf(
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8.5);
   doc.setTextColor(119, 90, 25);
-  doc.text('2. MARIAGE COUTUMIER', col2X + ceremonyBoxW / 2, currentY + 6, { align: 'center' });
+  doc.text(`2. ${coutumier.ceremony.toUpperCase()}`, col2X + ceremonyBoxW / 2, currentY + 6, { align: 'center' });
 
   doc.setFont('times', 'bold');
   doc.setFontSize(10.5);
   doc.setTextColor(27, 28, 26);
-  doc.text(details.date2 || 'Samedi 31 Octobre 2026', col2X + ceremonyBoxW / 2, currentY + 16.5, { align: 'center' });
+  doc.text(coutumier.date, col2X + ceremonyBoxW / 2, currentY + 16.5, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(119, 90, 25);
-  doc.text(coutumierVenue.time || '15H00 — 19H45', col2X + ceremonyBoxW / 2, currentY + 22, { align: 'center' });
+  doc.text(coutumier.time, col2X + ceremonyBoxW / 2, currentY + 22, { align: 'center' });
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(9);
   doc.setTextColor(27, 28, 26);
-  doc.text(coutumierVenue.name || 'Résidence Familiale — N\'sele', col2X + ceremonyBoxW / 2, currentY + 29.5, { align: 'center' });
+  doc.text(coutumier.name, col2X + ceremonyBoxW / 2, currentY + 29.5, { align: 'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(78, 70, 57);
-  const coutumierAddr = doc.splitTextToSize(coutumierVenue.address || 'N\'sele, Kinshasa', ceremonyBoxW - 6);
+  const coutumierAddrText = coutumier.address + (coutumier.landmarks ? `\n${coutumier.landmarks}` : '');
+  const coutumierAddr = doc.splitTextToSize(coutumierAddrText, ceremonyBoxW - 6);
   doc.text(coutumierAddr, col2X + ceremonyBoxW / 2, currentY + 36, { align: 'center' });
 
   doc.setFont('times', 'italic');
@@ -537,7 +611,7 @@ export async function shareInvitationPdfViaWhatsApp(
       return { method: 'native' };
     } catch (shareErr: any) {
       if (shareErr?.name === 'AbortError') {
-        return { method: 'native' }; // L'utilisateur a fermé la boîte de dialogue
+        return { method: 'native' };
       }
       console.warn('Native share failed, falling back to cloud link', shareErr);
     }
@@ -547,9 +621,9 @@ export async function shareInvitationPdfViaWhatsApp(
   doc.save(fileName);
   const pdfPublicUrl = await uploadInvitationPdfToStorage(doc, guest.id);
 
-  // 4. Ouvrir WhatsApp avec le message contenant le lien direct du PDF
+  // 4. Ouvrir WhatsApp avec le message contenant le lien direct du PDF et les informations synchronisées
   const cleanPhone = formatPhoneForWhatsApp(guest.phone);
-  const message = generateWhatsAppInvitationMessage(guest, details, pdfPublicUrl);
+  const message = generateWhatsAppInvitationMessage(guest, details, pdfPublicUrl, venues, programSteps);
 
   const waUrl = cleanPhone
     ? `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(message)}`
